@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body { font-family: Arial; margin: 0; background: #f4f6f8; }
+    header { background: #2e7d32; color: white; padding: 20px; text-align: center; }
+    nav { background: #1b5e20; padding: 10px; text-align: center; }
+    nav a { color: white; margin: 10px; text-decoration: none; font-weight: bold; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 15px;
+      padding: 15px;
+    }
+
+    .card {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .card h3 {
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    .value {
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .green { color: #2e7d32; }
+    .red { color: #c62828; }
+    .blue { color: #1565c0; }
+
+    .section {
+      background: white;
+      margin: 15px;
+      padding: 15px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>🐄 Cow Farm Dashboard</h1>
+  <p>Overall Farm Summary</p>
+</header>
+
+<nav>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="cows.html">Cows</a>
+  <a href="milk.html">Milk</a>
+  <a href="expenses.html">Expenses</a>
+  <a href="finance.html">Finance</a>
+</nav>
+
+<!-- SUMMARY CARDS -->
+<div class="grid">
+
+  <div class="card">
+    <h3>Total Cows</h3>
+    <div class="value blue" id="totalCows">0</div>
+  </div>
+
+  <div class="card">
+    <h3>Total Milk (All Time)</h3>
+    <div class="value blue" id="totalMilk">0 L</div>
+  </div>
+
+  <div class="card">
+    <h3>Total Milk Income</h3>
+    <div class="value green">₹<span id="milkIncome">0</span></div>
+  </div>
+
+  <div class="card">
+    <h3>Total Expenses</h3>
+    <div class="value red">₹<span id="totalExpenses">0</span></div>
+  </div>
+
+  <div class="card">
+    <h3>Net Profit / Loss</h3>
+    <div class="value" id="netProfit">₹0</div>
+  </div>
+
+</div>
+
+<!-- LOANS -->
+<div class="section">
+  <h3>🏦 Advance & Loan Summary</h3>
+  <div id="loanList"></div>
+</div>
+
+<script>
+  // Load data from localStorage
+  let cows = JSON.parse(localStorage.getItem("cows")) || [];
+  let milkRecords = JSON.parse(localStorage.getItem("milkRecords")) || [];
+  let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+  let finance = JSON.parse(localStorage.getItem("finance")) || [];
+
+  // Total cows
+  document.getElementById("totalCows").innerText = cows.length;
+
+  // Milk calculations
+  let totalMilk = 0;
+  let totalMilkIncome = 0;
+  milkRecords.forEach(m => {
+    totalMilk += m.total;
+    totalMilkIncome += m.income;
+  });
+
+  document.getElementById("totalMilk").innerText = totalMilk + " L";
+  document.getElementById("milkIncome").innerText = totalMilkIncome;
+
+  // Expense calculation
+  let totalExpense = expenses.reduce((sum, e) => sum + e.amount, 0);
+  document.getElementById("totalExpenses").innerText = totalExpense;
+
+  // Profit / Loss
+  let profit = totalMilkIncome - totalExpense;
+  let profitBox = document.getElementById("netProfit");
+  profitBox.innerText = "₹" + profit;
+
+  if (profit >= 0) {
+    profitBox.className = "value green";
+  } else {
+    profitBox.className = "value red";
+  }
+
+  // Loan & Advance list
+  let loanHtml = "";
+  finance.forEach(f => {
+    loanHtml += `<p>• ${f.type} from ${f.source}: ₹${f.amount}</p>`;
+  });
+
+  document.getElementById("loanList").innerHTML =
+    loanHtml || "<p>No loan/advance records</p>";
+</script>
+
+</body>
+</html>
