@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Expenses</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body { font-family: Arial; margin: 0; background: #f4f6f8; }
+    header { background: #c62828; color: white; padding: 20px; text-align: center; }
+    nav { background: #8e0000; padding: 10px; text-align: center; }
+    nav a { color: white; margin: 10px; text-decoration: none; font-weight: bold; }
+
+    .box {
+      background: white;
+      margin: 15px;
+      padding: 15px;
+      border-radius: 10px;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+    }
+
+    button {
+      background: #c62828;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .danger {
+      background: #000;
+      margin-top: 10px;
+    }
+
+    .record {
+      background: #ffebee;
+      padding: 15px;
+      margin: 15px;
+      border-radius: 10px;
+    }
+
+    .total {
+      font-size: 18px;
+      font-weight: bold;
+      color: #c62828;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>💸 Expenses</h1>
+</header>
+
+<nav>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="cows.html">Cows</a>
+  <a href="milk.html">Milk</a>
+  <a href="expenses.html">Expenses</a>
+  <a href="finance.html">Finance</a>
+</nav>
+
+<!-- EXPENSE ENTRY FORM -->
+<div class="box">
+  <h2>Add Expense</h2>
+
+  <label>Date</label>
+  <input type="date" id="date">
+
+  <label>Category</label>
+  <select id="category">
+    <option>Feed</option>
+    <option>Medicine</option>
+    <option>Electricity</option>
+    <option>Labor</option>
+    <option>Maintenance</option>
+    <option>Other</option>
+  </select>
+
+  <label>Amount (₹)</label>
+  <input type="number" id="amount" placeholder="e.g. 250">
+
+  <label>Notes</label>
+  <input type="text" id="note" placeholder="Optional">
+
+  <button onclick="saveExpense()">Save Expense</button>
+</div>
+
+<!-- TOTAL EXPENSE -->
+<div class="box total">
+  Total Expenses: ₹<span id="totalExpense">0</span>
+</div>
+
+<!-- EXPENSE RECORDS -->
+<div id="expenseList"></div>
+
+<script>
+  let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+
+  // set today's date by default
+  document.getElementById("date").value =
+    new Date().toISOString().split("T")[0];
+
+  function saveExpense() {
+    let exp = {
+      date: date.value,
+      category: category.value,
+      amount: Number(amount.value),
+      note: note.value
+    };
+
+    expenses.push(exp);
+    localStorage.setItem("expenses", JSON.stringify(expenses));
+
+    renderExpenses();
+    clearForm();
+  }
+
+  function deleteExpense(index) {
+    expenses.splice(index, 1);
+    localStorage.setItem("expenses", JSON.stringify(expenses));
+    renderExpenses();
+  }
+
+  function clearForm() {
+    amount.value = note.value = "";
+  }
+
+  function renderExpenses() {
+    let total = 0;
+    expenseList.innerHTML = "";
+
+    expenses.forEach((e, i) => {
+      total += e.amount;
+      expenseList.innerHTML += `
+        <div class="record">
+          <b>Date:</b> ${e.date}<br>
+          <b>Category:</b> ${e.category}<br>
+          <b>Amount:</b> ₹${e.amount}<br>
+          <b>Note:</b> ${e.note || "-"}<br>
+          <button class="danger" onclick="deleteExpense(${i})">Delete</button>
+        </div>
+      `;
+    });
+
+    document.getElementById("totalExpense").innerText = total;
+  }
+
+  renderExpenses();
+</script>
+
+</body>
+</html>
