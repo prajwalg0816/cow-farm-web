@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Milking Entry</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body { font-family: Arial; margin: 0; background: #f4f6f8; }
+    header { background: #2e7d32; color: white; padding: 20px; text-align: center; }
+    nav { background: #1b5e20; padding: 10px; text-align: center; }
+    nav a { color: white; margin: 10px; text-decoration: none; font-weight: bold; }
+
+    .box {
+      background: white;
+      margin: 15px;
+      padding: 15px;
+      border-radius: 10px;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+    }
+
+    button {
+      background: #2e7d32;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .danger {
+      background: #c62828;
+      margin-top: 10px;
+    }
+
+    .record {
+      background: #e8f5e9;
+      padding: 15px;
+      margin: 15px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>🥛 Milking Entry</h1>
+</header>
+
+<nav>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="cows.html">Cows</a>
+  <a href="milk.html">Milk</a>
+  <a href="expenses.html">Expenses</a>
+  <a href="finance.html">Finance</a>
+</nav>
+
+<!-- MILK ENTRY FORM -->
+<div class="box">
+  <h2>Daily Milk Entry</h2>
+
+  <label>Date</label>
+  <input type="date" id="date">
+
+  <label>Morning Milk (Liters)</label>
+  <input type="number" id="morning" placeholder="e.g. 18">
+
+  <label>Evening Milk (Liters)</label>
+  <input type="number" id="evening" placeholder="e.g. 16">
+
+  <label>Price per Liter (₹)</label>
+  <input type="number" id="price" value="35">
+
+  <button onclick="saveMilk()">Save Milk Entry</button>
+</div>
+
+<!-- MILK RECORDS -->
+<div id="milkList"></div>
+
+<script>
+  let milkRecords = JSON.parse(localStorage.getItem("milkRecords")) || [];
+
+  // set today's date by default
+  document.getElementById("date").value =
+    new Date().toISOString().split("T")[0];
+
+  function saveMilk() {
+    let record = {
+      date: date.value,
+      morning: Number(morning.value),
+      evening: Number(evening.value),
+      price: Number(price.value)
+    };
+
+    record.total = record.morning + record.evening;
+    record.income = record.total * record.price;
+
+    if (record.total < 33 || record.total > 37) {
+      alert("⚠ Milk outside expected range (33–37 L)");
+    }
+
+    milkRecords.push(record);
+    localStorage.setItem("milkRecords", JSON.stringify(milkRecords));
+
+    renderMilk();
+    clearForm();
+  }
+
+  function deleteMilk(index) {
+    milkRecords.splice(index, 1);
+    localStorage.setItem("milkRecords", JSON.stringify(milkRecords));
+    renderMilk();
+  }
+
+  function clearForm() {
+    morning.value = evening.value = "";
+  }
+
+  function renderMilk() {
+    milkList.innerHTML = "";
+    milkRecords.forEach((m, i) => {
+      milkList.innerHTML += `
+        <div class="record">
+          <b>Date:</b> ${m.date}<br>
+          <b>Morning:</b> ${m.morning} L<br>
+          <b>Evening:</b> ${m.evening} L<br>
+          <b>Total Milk:</b> ${m.total} L<br>
+          <b>Rate:</b> ₹${m.price}/L<br>
+          <b>Income:</b> ₹${m.income}<br>
+          <button class="danger" onclick="deleteMilk(${i})">Delete</button>
+        </div>
+      `;
+    });
+  }
+
+  renderMilk();
+</script>
+
+</body>
+</html>
