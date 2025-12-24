@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Finance</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body { font-family: Arial; margin: 0; background: #f4f6f8; }
+    header { background: #1565c0; color: white; padding: 20px; text-align: center; }
+    nav { background: #003c8f; padding: 10px; text-align: center; }
+    nav a { color: white; margin: 10px; text-decoration: none; font-weight: bold; }
+
+    .box {
+      background: white;
+      margin: 15px;
+      padding: 15px;
+      border-radius: 10px;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+    }
+
+    button {
+      background: #1565c0;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .summary {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .profit { color: green; }
+    .loss { color: red; }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>💰 Finance</h1>
+</header>
+
+<nav>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="cows.html">Cows</a>
+  <a href="milk.html">Milk</a>
+  <a href="expenses.html">Expenses</a>
+  <a href="finance.html">Finance</a>
+</nav>
+
+<!-- ADVANCE / LOAN ENTRY -->
+<div class="box">
+  <h2>Advance / Loan Entry</h2>
+
+  <label>Source</label>
+  <input id="source" placeholder="Dairy / Friend">
+
+  <label>Amount (₹)</label>
+  <input type="number" id="amount">
+
+  <label>Type</label>
+  <input id="type" placeholder="Advance or Loan">
+
+  <button onclick="saveFinance()">Save</button>
+</div>
+
+<!-- FINANCE RECORDS -->
+<div class="box">
+  <h2>Advance & Loan Records</h2>
+  <div id="financeList"></div>
+</div>
+
+<!-- PROFIT / LOSS -->
+<div class="box summary">
+  Milk Income: ₹<span id="income">0</span><br><br>
+  Total Expenses: ₹<span id="expense">0</span><br><br>
+  <span id="profitText">Net Profit:</span>
+  ₹<span id="profit">0</span>
+</div>
+
+<script>
+  let finance = JSON.parse(localStorage.getItem("finance")) || [];
+  let milkRecords = JSON.parse(localStorage.getItem("milkRecords")) || [];
+  let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+
+  function saveFinance() {
+    finance.push({
+      source: source.value,
+      amount: Number(amount.value),
+      type: type.value
+    });
+
+    localStorage.setItem("finance", JSON.stringify(finance));
+    renderFinance();
+    source.value = amount.value = type.value = "";
+  }
+
+  function renderFinance() {
+    financeList.innerHTML = "";
+    finance.forEach((f, i) => {
+      financeList.innerHTML += `
+        <p>• ${f.type} from ${f.source}: ₹${f.amount}</p>
+      `;
+    });
+  }
+
+  function calculateProfit() {
+    let totalIncome = milkRecords.reduce((sum, m) => sum + m.income, 0);
+    let totalExpense = expenses.reduce((sum, e) => sum + e.amount, 0);
+
+    let profit = totalIncome - totalExpense;
+
+    income.innerText = totalIncome;
+    expense.innerText = totalExpense;
+    profitElem = document.getElementById("profit");
+    profitElem.innerText = profit;
+
+    if (profit >= 0) {
+      profitElem.className = "profit";
+      profitText.innerText = "Net Profit:";
+    } else {
+      profitElem.className = "loss";
+      profitText.innerText = "Net Loss:";
+    }
+  }
+
+  renderFinance();
+  calculateProfit();
+</script>
+
+</body>
+</html>
