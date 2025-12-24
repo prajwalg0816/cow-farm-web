@@ -17,7 +17,7 @@
       border-radius: 10px;
     }
 
-    input, button {
+    input, select, button {
       width: 100%;
       padding: 10px;
       margin-top: 8px;
@@ -31,13 +31,17 @@
       cursor: pointer;
     }
 
-    .summary {
-      font-size: 18px;
-      font-weight: bold;
+    .record {
+      background: #e3f2fd;
+      margin: 15px;
+      padding: 15px;
+      border-radius: 10px;
     }
 
-    .profit { color: green; }
-    .loss { color: red; }
+    .danger {
+      background: #c62828;
+      margin-top: 10px;
+    }
   </style>
 </head>
 
@@ -55,84 +59,107 @@
   <a href="finance.html">Finance</a>
 </nav>
 
-<!-- ADVANCE / LOAN ENTRY -->
+<!-- 🔐 AUTH CHECK -->
+<script type="module">
+  import { getAuth, onAuthStateChanged } from
+  "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  onAuthStateChanged(auth, user => {
+    if (!user) window.location.href = "login.html";
+  });
+</script>
+
+<!-- FINANCE ENTRY -->
 <div class="box">
-  <h2>Advance / Loan Entry</h2>
+  <h2>Add Advance / Loan</h2>
+
+  <label>Type</label>
+  <select id="type">
+    <option>Advance</option>
+    <option>Loan</option>
+  </select>
 
   <label>Source</label>
-  <input id="source" placeholder="Dairy / Friend">
+  <input id="source" placeholder="Dairy / Friend / Bank">
 
   <label>Amount (₹)</label>
   <input type="number" id="amount">
 
-  <label>Type</label>
-  <input id="type" placeholder="Advance or Loan">
+  <label>Interest (%)</label>
+  <input type="number" id="interest" value="0">
 
   <button onclick="saveFinance()">Save</button>
 </div>
 
 <!-- FINANCE RECORDS -->
-<div class="box">
-  <h2>Advance & Loan Records</h2>
-  <div id="financeList"></div>
-</div>
+<div id="financeList"></div>
 
-<!-- PROFIT / LOSS -->
-<div class="box summary">
-  Milk Income: ₹<span id="income">0</span><br><br>
-  Total Expenses: ₹<span id="expense">0</span><br><br>
-  <span id="profitText">Net Profit:</span>
-  ₹<span id="profit">0</span>
-</div>
+<!-- 🔥 FIREBASE LOGIC -->
+<script type="module">
+  import { initializeApp } from
+  "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {
+    getFirestore, collection, addDoc,
+    getDocs, deleteDoc, doc
+  } from
+  "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getAuth } from
+  "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-<script>
-  let finance = JSON.parse(localStorage.getItem("finance")) || [];
-  let milkRecords = JSON.parse(localStorage.getItem("milkRecords")) || [];
-  let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+  // 🔥 YOUR FIREBASE CONFIG
+  const firebaseConfig = {
+    apiKey: "AIzaSyC4lH4ViCEhQbvNt6nLXmfR-AhAa1-b6Bk",
+    authDomain: "pgdairy-63765.firebaseapp.com",
+    projectId: "pgdairy-63765",
+    appId: "1:460696117464:web:410ce4a62e899d8567f7ad"
+  };
 
-  function saveFinance() {
-    finance.push({
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  // SAVE FINANCE
+  window.saveFinance = async function () {
+    await addDoc(collection(db, "finance"), {
+      type: type.value,
       source: source.value,
       amount: Number(amount.value),
-      type: type.value
+      interest: Number(interest.value),
+      createdAt: new Date()
     });
 
-    localStorage.setItem("finance", JSON.stringify(finance));
-    renderFinance();
-    source.value = amount.value = type.value = "";
-  }
+    alert("✅ Finance record saved");
+    source.value = amount.value = "";
+    loadFinance();
+  };
 
-  function renderFinance() {
+  // LOAD FINANCE
+  async function loadFinance() {
     financeList.innerHTML = "";
-    finance.forEach((f, i) => {
+    const snap = await getDocs(collection(db, "finance"));
+
+    snap.forEach(docSnap => {
+      const f = docSnap.data();
       financeList.innerHTML += `
-        <p>• ${f.type} from ${f.source}: ₹${f.amount}</p>
+        <div class="record">
+          <b>Type:</b> ${f.type}<br>
+          <b>Source:</b> ${f.source}<br>
+          <b>Amount:</b> ₹${f.amount}<br>
+          <b>Interest:</b> ${f.interest}%<br>
+          <button class="danger"
+            onclick="deleteFinance('${docSnap.id}')">Delete</button>
+        </div>
       `;
     });
   }
 
-  function calculateProfit() {
-    let totalIncome = milkRecords.reduce((sum, m) => sum + m.income, 0);
-    let totalExpense = expenses.reduce((sum, e) => sum + e.amount, 0);
+  // DELETE FINANCE
+  window.deleteFinance = async function (id) {
+    await deleteDoc(doc(db, "finance", id));
+    loadFinance();
+  };
 
-    let profit = totalIncome - totalExpense;
-
-    income.innerText = totalIncome;
-    expense.innerText = totalExpense;
-    profitElem = document.getElementById("profit");
-    profitElem.innerText = profit;
-
-    if (profit >= 0) {
-      profitElem.className = "profit";
-      profitText.innerText = "Net Profit:";
-    } else {
-      profitElem.className = "loss";
-      profitText.innerText = "Net Loss:";
-    }
-  }
-
-  renderFinance();
-  calculateProfit();
+  loadFinance();
 </script>
 
 </body>
