@@ -1,10 +1,137 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Cow Farm App</title>
+  <meta charset="UTF-8">
+  <title>Cow Farm Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- ✅ CSS INSIDE SAME FILE -->
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #333;
+    }
+
+    header {
+      background: #2e7d32;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 15px;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .card h2 {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    .value {
+      font-size: 20px;
+      font-weight: bold;
+      color: #2e7d32;
+    }
+
+    .card.profit .value {
+      color: #1565c0;
+    }
+
+    .card.loan .value {
+      color: #c62828;
+    }
+
+    .loan-details {
+      background: white;
+      margin: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .loan-details h2 {
+      margin-bottom: 10px;
+    }
+
+    .loan-details ul {
+      padding-left: 20px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 10px;
+      font-size: 14px;
+      background: #e0e0e0;
+    }
+  </style>
 </head>
+
 <body>
-  <h1>🐄 Cow Farm Web Application</h1>
-  <p>Welcome to my farm record system</p>
+
+  <header>
+    <h1>🐄 Cow Farm Dashboard</h1>
+    <p>Daily Farm Overview</p>
+  </header>
+
+  <section class="cards">
+
+    <div class="card">
+      <h2>Total Cows</h2>
+      <p class="value">2</p>
+    </div>
+
+    <div class="card">
+      <h2>Milk Range / Day</h2>
+      <p class="value">33 – 37 L</p>
+    </div>
+
+    <div class="card">
+      <h2>Daily Income</h2>
+      <p class="value">₹1,150 – ₹1,300</p>
+    </div>
+
+    <div class="card">
+      <h2>Daily Expenses</h2>
+      <p class="value">₹300 – ₹400</p>
+    </div>
+
+    <div class="card profit">
+      <h2>Net Profit / Day</h2>
+      <p class="value">₹850 – ₹900</p>
+    </div>
+
+    <div class="card loan">
+      <h2>Total Loan</h2>
+      <p class="value">₹1,50,000</p>
+    </div>
+
+  </section>
+
+  <section class="loan-details">
+    <h2>🏦 Loan Details</h2>
+    <ul>
+      <li>Dairy Advance: ₹1,00,000 (0% Interest)</li>
+      <li>Friend Loan: ₹50,000 (0% Interest)</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>© 2025 Cow Farm Web App</p>
+  </footer>
+
 </body>
 </html>
