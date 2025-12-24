@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Reports</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body { font-family: Arial; margin: 0; background: #f4f6f8; }
+    header { background: #4e342e; color: white; padding: 20px; text-align: center; }
+    nav { background: #3e2723; padding: 10px; text-align: center; }
+    nav a { color: white; margin: 10px; text-decoration: none; font-weight: bold; }
+
+    .box {
+      background: white;
+      margin: 15px;
+      padding: 15px;
+      border-radius: 10px;
+    }
+
+    select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+    }
+
+    .record {
+      background: #efebe9;
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .profit { color: green; font-weight: bold; }
+    .loss { color: red; font-weight: bold; }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>📊 Monthly / Yearly Reports</h1>
+</header>
+
+<nav>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="reports.html">Reports</a>
+</nav>
+
+<!-- FILTER -->
+<div class="box">
+  <h3>Select Month & Year</h3>
+
+  <select id="month">
+    <option value="0">January</option>
+    <option value="1">February</option>
+    <option value="2">March</option>
+    <option value="3">April</option>
+    <option value="4">May</option>
+    <option value="5">June</option>
+    <option value="6">July</option>
+    <option value="7">August</option>
+    <option value="8">September</option>
+    <option value="9">October</option>
+    <option value="10">November</option>
+    <option value="11">December</option>
+  </select>
+
+  <select id="year"></select>
+
+  <button onclick="generateReport()">Generate Report</button>
+</div>
+
+<!-- REPORT OUTPUT -->
+<div id="report"></div>
+
+<!-- 🔥 FIREBASE LOGIC -->
+<script type="module">
+  import { initializeApp } from
+  "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {
+    getFirestore, collection, getDocs
+  } from
+  "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getAuth } from
+  "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC4lH4ViCEhQbvNt6nLXmfR-AhAa1-b6Bk",
+    authDomain: "pgdairy-63765.firebaseapp.com",
+    projectId: "pgdairy-63765",
+    appId: "1:460696117464:web:410ce4a62e899d8567f7ad"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  getAuth(app);
+
+  // Populate year dropdown
+  const yearSelect = document.getElementById("year");
+  const currentYear = new Date().getFullYear();
+  for (let y = currentYear; y >= currentYear - 5; y--) {
+    yearSelect.innerHTML += `<option>${y}</option>`;
+  }
+
+  window.generateReport = async function () {
+    const month = Number(document.getElementById("month").value);
+    const year = Number(document.getElementById("year").value);
+
+    let periods = {
+      "1–10": { income: 0, expense: 0 },
+      "11–20": { income: 0, expense: 0 },
+      "21–End": { income: 0, expense: 0 }
+    };
+
+    // 🥛 MILK
+    const milkSnap = await getDocs(collection(db, "milk"));
+    milkSnap.forEach(doc => {
+      const m = doc.data();
+      const d = new Date(m.date);
+      if (d.getMonth() === month && d.getFullYear() === year) {
+        const day = d.getDate();
+        const key = day <= 10 ? "1–10" : day <= 20 ? "11–20" : "21–End";
+        periods[key].income += m.income;
+      }
+    });
+
+    // 💸 EXPENSES
+    const expSnap = await getDocs(collection(db, "expenses"));
+    expSnap.forEach(doc => {
+      const e = doc.data();
+      const d = new Date(e.date);
+      if (d.getMonth() === month && d.getFullYear() === year) {
+        const day = d.getDate();
+        const key = day <= 10 ? "1–10" : day <= 20 ? "11–20" : "21–End";
+        periods[key].expense += e.amount;
+      }
+    });
+
+    // OUTPUT
+    let html = `<div class="box"><h3>Report</h3>`;
+    let totalProfit = 0;
+
+    for (let p in periods) {
+      const profit = periods[p].income - periods[p].expense;
+      totalProfit += profit;
+
+      html += `
+        <div class="record">
+          <b>Period:</b> ${p}<br>
+          Milk Income: ₹${periods[p].income}<br>
+          Expenses: ₹${periods[p].expense}<br>
+          <span class="${profit >= 0 ? "profit" : "loss"}">
+            Profit: ₹${profit}
+          </span>
+        </div>
+      `;
+    }
+
+    html += `<h3>Total Monthly Profit: ₹${totalProfit}</h3></div>`;
+    document.getElementById("report").innerHTML = html;
+  };
+</script>
+
+</body>
+</html>
