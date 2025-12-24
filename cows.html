@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cow Records</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body { font-family: Arial; margin: 0; background: #f4f6f8; }
+    header { background: #2e7d32; color: white; padding: 20px; text-align: center; }
+    nav { background: #1b5e20; padding: 10px; text-align: center; }
+    nav a { color: white; margin: 10px; text-decoration: none; font-weight: bold; }
+
+    .box {
+      background: white;
+      margin: 15px;
+      padding: 15px;
+      border-radius: 10px;
+    }
+
+    input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+    }
+
+    button {
+      background: #2e7d32;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .cow-card {
+      background: #e8f5e9;
+      padding: 15px;
+      margin: 15px;
+      border-radius: 10px;
+    }
+
+    .danger {
+      background: #c62828;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>🐄 Cow Records</h1>
+</header>
+
+<nav>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="cows.html">Cows</a>
+  <a href="milk.html">Milk</a>
+  <a href="expenses.html">Expenses</a>
+  <a href="finance.html">Finance</a>
+</nav>
+
+<!-- ADD / EDIT COW -->
+<div class="box">
+  <h2>Add / Edit Cow</h2>
+
+  <input id="cowId" placeholder="Cow ID (COW-01)">
+  <input id="breed" placeholder="Breed (HF / Jersey)">
+  <input type="date" id="insemination">
+  <input type="date" id="delivery" placeholder="Expected Delivery">
+  <textarea id="medical" placeholder="Medical / Vaccination Notes"></textarea>
+
+  <button onclick="saveCow()">Save Cow</button>
+</div>
+
+<!-- COW LIST -->
+<div id="cowList"></div>
+
+<script>
+  let cows = JSON.parse(localStorage.getItem("cows")) || [];
+
+  function monthsPregnant(date) {
+    if (!date) return "0";
+    let start = new Date(date);
+    let today = new Date();
+    return Math.floor((today - start) / (1000 * 60 * 60 * 24 * 30));
+  }
+
+  function saveCow() {
+    let cow = {
+      id: cowId.value,
+      breed: breed.value,
+      insemination: insemination.value,
+      delivery: delivery.value,
+      medical: medical.value
+    };
+
+    let index = cows.findIndex(c => c.id === cow.id);
+    if (index >= 0) cows[index] = cow;
+    else cows.push(cow);
+
+    localStorage.setItem("cows", JSON.stringify(cows));
+    renderCows();
+    clearForm();
+  }
+
+  function deleteCow(id) {
+    cows = cows.filter(c => c.id !== id);
+    localStorage.setItem("cows", JSON.stringify(cows));
+    renderCows();
+  }
+
+  function editCow(id) {
+    let cow = cows.find(c => c.id === id);
+    cowId.value = cow.id;
+    breed.value = cow.breed;
+    insemination.value = cow.insemination;
+    delivery.value = cow.delivery;
+    medical.value = cow.medical;
+  }
+
+  function clearForm() {
+    cowId.value = breed.value = insemination.value = delivery.value = medical.value = "";
+  }
+
+  function renderCows() {
+    cowList.innerHTML = "";
+    cows.forEach(c => {
+      cowList.innerHTML += `
+        <div class="cow-card">
+          <b>Cow ID:</b> ${c.id}<br>
+          <b>Breed:</b> ${c.breed}<br>
+          <b>Insemination Date:</b> ${c.insemination || "-"}<br>
+          <b>Expected Delivery:</b> ${c.delivery || "-"}<br>
+          <b>Pregnancy Months:</b> ${monthsPregnant(c.insemination)}<br>
+          <b>Medical:</b> ${c.medical || "-"}<br>
+
+          <button onclick="editCow('${c.id}')">Edit</button>
+          <button class="danger" onclick="deleteCow('${c.id}')">Delete</button>
+        </div>
+      `;
+    });
+  }
+
+  renderCows();
+</script>
+
+</body>
+</html>
