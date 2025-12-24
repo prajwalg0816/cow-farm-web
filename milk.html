@@ -10,18 +10,8 @@
     nav { background: #1b5e20; padding: 10px; text-align: center; }
     nav a { color: white; margin: 10px; text-decoration: none; font-weight: bold; }
 
-    .box {
-      background: white;
-      margin: 15px;
-      padding: 15px;
-      border-radius: 10px;
-    }
-
-    input, button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 8px;
-    }
+    .box { background: white; margin: 15px; padding: 15px; border-radius: 10px; }
+    input, button { width: 100%; padding: 10px; margin-top: 8px; }
 
     button {
       background: #2e7d32;
@@ -31,16 +21,16 @@
       cursor: pointer;
     }
 
+    .record {
+      background: #e8f5e9;
+      margin: 15px;
+      padding: 15px;
+      border-radius: 10px;
+    }
+
     .danger {
       background: #c62828;
       margin-top: 10px;
-    }
-
-    .record {
-      background: #e8f5e9;
-      padding: 15px;
-      margin: 15px;
-      border-radius: 10px;
     }
   </style>
 </head>
@@ -59,6 +49,16 @@
   <a href="finance.html">Finance</a>
 </nav>
 
+<!-- 🔐 AUTH CHECK -->
+<script type="module">
+  import { getAuth, onAuthStateChanged } from
+  "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  onAuthStateChanged(auth, user => {
+    if (!user) window.location.href = "login.html";
+  });
+</script>
+
 <!-- MILK ENTRY FORM -->
 <div class="box">
   <h2>Daily Milk Entry</h2>
@@ -66,78 +66,102 @@
   <label>Date</label>
   <input type="date" id="date">
 
-  <label>Morning Milk (Liters)</label>
-  <input type="number" id="morning" placeholder="e.g. 18">
+  <label>Morning Milk (L)</label>
+  <input type="number" id="morning">
 
-  <label>Evening Milk (Liters)</label>
-  <input type="number" id="evening" placeholder="e.g. 16">
+  <label>Evening Milk (L)</label>
+  <input type="number" id="evening">
 
-  <label>Price per Liter (₹)</label>
+  <label>Rate per Liter (₹)</label>
   <input type="number" id="price" value="35">
 
-  <button onclick="saveMilk()">Save Milk Entry</button>
+  <button onclick="saveMilk()">Save Milk</button>
 </div>
 
 <!-- MILK RECORDS -->
 <div id="milkList"></div>
 
-<script>
-  let milkRecords = JSON.parse(localStorage.getItem("milkRecords")) || [];
+<!-- 🔥 FIREBASE LOGIC -->
+<script type="module">
+  import { initializeApp } from
+  "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {
+    getFirestore, collection, addDoc,
+    getDocs, deleteDoc, doc
+  } from
+  "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getAuth } from
+  "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-  // set today's date by default
+  // 🔥 Firebase config (YOUR PROJECT)
+  const firebaseConfig = {
+    apiKey: "AIzaSyC4lH4ViCEhQbvNt6nLXmfR-AhAa1-b6Bk",
+    authDomain: "pgdairy-63765.firebaseapp.com",
+    projectId: "pgdairy-63765",
+    appId: "1:460696117464:web:410ce4a62e899d8567f7ad"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  // Default date = today
   document.getElementById("date").value =
     new Date().toISOString().split("T")[0];
 
-  function saveMilk() {
-    let record = {
-      date: date.value,
-      morning: Number(morning.value),
-      evening: Number(evening.value),
-      price: Number(price.value)
-    };
+  // SAVE MILK
+  window.saveMilk = async function () {
+    let m = Number(morning.value);
+    let e = Number(evening.value);
+    let p = Number(price.value);
+    let total = m + e;
+    let income = total * p;
 
-    record.total = record.morning + record.evening;
-    record.income = record.total * record.price;
-
-    if (record.total < 33 || record.total > 37) {
+    if (total < 33 || total > 37) {
       alert("⚠ Milk outside expected range (33–37 L)");
     }
 
-    milkRecords.push(record);
-    localStorage.setItem("milkRecords", JSON.stringify(milkRecords));
+    await addDoc(collection(db, "milk"), {
+      date: date.value,
+      morning: m,
+      evening: e,
+      total,
+      price: p,
+      income,
+      createdAt: new Date()
+    });
 
-    renderMilk();
-    clearForm();
-  }
-
-  function deleteMilk(index) {
-    milkRecords.splice(index, 1);
-    localStorage.setItem("milkRecords", JSON.stringify(milkRecords));
-    renderMilk();
-  }
-
-  function clearForm() {
+    alert("✅ Milk saved to cloud");
     morning.value = evening.value = "";
-  }
+    loadMilk();
+  };
 
-  function renderMilk() {
+  // LOAD MILK RECORDS
+  async function loadMilk() {
     milkList.innerHTML = "";
-    milkRecords.forEach((m, i) => {
+    const snap = await getDocs(collection(db, "milk"));
+
+    snap.forEach(docSnap => {
+      const m = docSnap.data();
       milkList.innerHTML += `
         <div class="record">
           <b>Date:</b> ${m.date}<br>
-          <b>Morning:</b> ${m.morning} L<br>
-          <b>Evening:</b> ${m.evening} L<br>
           <b>Total Milk:</b> ${m.total} L<br>
-          <b>Rate:</b> ₹${m.price}/L<br>
           <b>Income:</b> ₹${m.income}<br>
-          <button class="danger" onclick="deleteMilk(${i})">Delete</button>
+          <button class="danger"
+            onclick="deleteMilk('${docSnap.id}')">Delete</button>
         </div>
       `;
     });
   }
 
-  renderMilk();
+  // DELETE MILK RECORD
+  window.deleteMilk = async function (id) {
+    await deleteDoc(doc(db, "milk", id));
+    loadMilk();
+  };
+
+  loadMilk();
 </script>
 
 </body>
