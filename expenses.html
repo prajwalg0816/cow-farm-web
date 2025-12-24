@@ -31,22 +31,16 @@
       cursor: pointer;
     }
 
-    .danger {
-      background: #000;
-      margin-top: 10px;
-    }
-
     .record {
       background: #ffebee;
-      padding: 15px;
       margin: 15px;
+      padding: 15px;
       border-radius: 10px;
     }
 
-    .total {
-      font-size: 18px;
-      font-weight: bold;
-      color: #c62828;
+    .danger {
+      background: black;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -65,7 +59,17 @@
   <a href="finance.html">Finance</a>
 </nav>
 
-<!-- EXPENSE ENTRY FORM -->
+<!-- 🔐 AUTH CHECK -->
+<script type="module">
+  import { getAuth, onAuthStateChanged } from
+  "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  onAuthStateChanged(auth, user => {
+    if (!user) window.location.href = "login.html";
+  });
+</script>
+
+<!-- EXPENSE ENTRY -->
 <div class="box">
   <h2>Add Expense</h2>
 
@@ -83,75 +87,87 @@
   </select>
 
   <label>Amount (₹)</label>
-  <input type="number" id="amount" placeholder="e.g. 250">
+  <input type="number" id="amount">
 
   <label>Notes</label>
-  <input type="text" id="note" placeholder="Optional">
+  <input type="text" id="note">
 
   <button onclick="saveExpense()">Save Expense</button>
-</div>
-
-<!-- TOTAL EXPENSE -->
-<div class="box total">
-  Total Expenses: ₹<span id="totalExpense">0</span>
 </div>
 
 <!-- EXPENSE RECORDS -->
 <div id="expenseList"></div>
 
-<script>
-  let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+<!-- 🔥 FIREBASE LOGIC -->
+<script type="module">
+  import { initializeApp } from
+  "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {
+    getFirestore, collection, addDoc,
+    getDocs, deleteDoc, doc
+  } from
+  "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getAuth } from
+  "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-  // set today's date by default
+  // 🔥 YOUR FIREBASE CONFIG
+  const firebaseConfig = {
+    apiKey: "AIzaSyC4lH4ViCEhQbvNt6nLXmfR-AhAa1-b6Bk",
+    authDomain: "pgdairy-63765.firebaseapp.com",
+    projectId: "pgdairy-63765",
+    appId: "1:460696117464:web:410ce4a62e899d8567f7ad"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  // Default date = today
   document.getElementById("date").value =
     new Date().toISOString().split("T")[0];
 
-  function saveExpense() {
-    let exp = {
+  // SAVE EXPENSE
+  window.saveExpense = async function () {
+    await addDoc(collection(db, "expenses"), {
       date: date.value,
       category: category.value,
       amount: Number(amount.value),
-      note: note.value
-    };
+      note: note.value,
+      createdAt: new Date()
+    });
 
-    expenses.push(exp);
-    localStorage.setItem("expenses", JSON.stringify(expenses));
-
-    renderExpenses();
-    clearForm();
-  }
-
-  function deleteExpense(index) {
-    expenses.splice(index, 1);
-    localStorage.setItem("expenses", JSON.stringify(expenses));
-    renderExpenses();
-  }
-
-  function clearForm() {
+    alert("✅ Expense saved to cloud");
     amount.value = note.value = "";
-  }
+    loadExpenses();
+  };
 
-  function renderExpenses() {
-    let total = 0;
+  // LOAD EXPENSES
+  async function loadExpenses() {
     expenseList.innerHTML = "";
+    const snap = await getDocs(collection(db, "expenses"));
 
-    expenses.forEach((e, i) => {
-      total += e.amount;
+    snap.forEach(docSnap => {
+      const e = docSnap.data();
       expenseList.innerHTML += `
         <div class="record">
           <b>Date:</b> ${e.date}<br>
           <b>Category:</b> ${e.category}<br>
           <b>Amount:</b> ₹${e.amount}<br>
           <b>Note:</b> ${e.note || "-"}<br>
-          <button class="danger" onclick="deleteExpense(${i})">Delete</button>
+          <button class="danger"
+            onclick="deleteExpense('${docSnap.id}')">Delete</button>
         </div>
       `;
     });
-
-    document.getElementById("totalExpense").innerText = total;
   }
 
-  renderExpenses();
+  // DELETE EXPENSE
+  window.deleteExpense = async function (id) {
+    await deleteDoc(doc(db, "expenses", id));
+    loadExpenses();
+  };
+
+  loadExpenses();
 </script>
 
 </body>
