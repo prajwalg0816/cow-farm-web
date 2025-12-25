@@ -1,78 +1,256 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Cow Records</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cow Records</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<style>
-body{margin:0;font-family:Segoe UI;background:#0b0f14;color:white;}
-header{padding:15px;text-align:center;color:#f9c74f;}
-.box{
- margin:15px;
- padding:20px;
- background:rgba(255,255,255,.08);
- backdrop-filter:blur(12px);
- border-radius:16px;
-}
-input,textarea,button{
- width:100%;
- padding:10px;
- margin-top:8px;
- border:none;
- border-radius:8px;
- background:#111;
- color:white;
-}
-button{
- background:linear-gradient(135deg,#f9c74f,#f9844a);
- font-weight:bold;
-}
-</style>
+  <style>
+    body{
+      margin:0;
+      font-family:Segoe UI,Arial;
+      background:#0b0f14;
+      color:white;
+    }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar{
+      position:fixed;
+      left:0;
+      top:0;
+      height:100vh;
+      width:220px;
+      background:rgba(20,20,20,0.9);
+      backdrop-filter:blur(14px);
+      padding:20px;
+    }
+
+    .sidebar h2{
+      color:#f9c74f;
+      text-align:center;
+      margin-bottom:20px;
+    }
+
+    .sidebar a,
+    .sidebar button{
+      display:block;
+      margin:8px 0;
+      padding:12px;
+      border-radius:10px;
+      text-decoration:none;
+      background:rgba(255,255,255,0.06);
+      color:white;
+      font-weight:600;
+      border:none;
+      cursor:pointer;
+    }
+
+    .sidebar a.active{
+      background:linear-gradient(135deg,#90dbf4,#4cc9f0);
+      color:black;
+    }
+
+    /* ===== CONTENT ===== */
+    .content{
+      margin-left:240px;
+      padding:20px;
+    }
+
+    header{
+      text-align:center;
+      font-size:24px;
+      color:#f9c74f;
+      margin-bottom:20px;
+    }
+
+    .box{
+      background:rgba(255,255,255,0.08);
+      backdrop-filter:blur(12px);
+      border-radius:18px;
+      padding:20px;
+      margin-bottom:20px;
+    }
+
+    input, select, button{
+      width:100%;
+      padding:12px;
+      margin-top:10px;
+      border:none;
+      border-radius:10px;
+      background:#111;
+      color:white;
+    }
+
+    button{
+      background:linear-gradient(135deg,#f9c74f,#f9844a);
+      font-weight:bold;
+      cursor:pointer;
+    }
+
+    .record{
+      background:rgba(255,255,255,0.06);
+      padding:15px;
+      border-radius:14px;
+      margin-bottom:12px;
+    }
+
+    .status{
+      color:#4cc9f0;
+      font-weight:bold;
+    }
+
+    /* ===== MOBILE ===== */
+    .bottom-nav{display:none;}
+    @media(max-width:768px){
+      .sidebar{display:none;}
+      .content{margin-left:0;padding-bottom:90px;}
+      .bottom-nav{
+        display:flex;
+        position:fixed;
+        bottom:0;
+        left:0;
+        width:100%;
+        background:rgba(20,20,20,0.95);
+        justify-content:space-around;
+        padding:12px 0;
+      }
+      .bottom-nav a{
+        font-size:22px;
+        color:#f9c74f;
+        text-decoration:none;
+      }
+      .bottom-nav a.active{color:#4cc9f0;}
+    }
+  </style>
 </head>
 
 <body>
 
-<header>🐄 Cow Records</header>
-
-<div class="box">
- <input id="id" placeholder="Cow ID">
- <input id="breed" placeholder="Breed">
- <input type="date" id="insemination">
- <textarea id="medical" placeholder="Medical notes"></textarea>
- <button onclick="save()">Save Cow</button>
+<!-- ===== SIDEBAR ===== -->
+<div class="sidebar">
+  <h2>🐄 PG Dairy</h2>
+  <a href="dashboard.html" class="nav-link">📊 Dashboard</a>
+  <a href="cows.html" class="nav-link">🐄 Cows</a>
+  <a href="milk.html" class="nav-link">🥛 Milk</a>
+  <a href="expenses.html" class="nav-link">💸 Expenses</a>
+  <a href="finance.html" class="nav-link">💰 Finance</a>
+  <a href="reports.html" class="nav-link">📑 Reports</a>
+  <button onclick="logout()">🚪 Logout</button>
 </div>
 
-<div id="list"></div>
+<!-- ===== MOBILE NAV ===== -->
+<div class="bottom-nav">
+  <a href="dashboard.html">📊</a>
+  <a href="cows.html">🐄</a>
+  <a href="milk.html">🥛</a>
+  <a href="expenses.html">💸</a>
+  <a href="finance.html">💰</a>
+  <a href="reports.html">📑</a>
+</div>
 
+<!-- ===== CONTENT ===== -->
+<div class="content">
+
+<header>🐄 Cow Records</header>
+
+<!-- ADD COW -->
+<div class="box">
+  <h3>Add Cow</h3>
+
+  <input id="cowName" placeholder="Cow Name">
+  <input id="cowId" placeholder="Cow ID">
+  <input type="date" id="purchaseDate">
+  <input type="date" id="inseminationDate">
+  <input type="number" id="capacity" placeholder="Milking Capacity (L/day)">
+
+  <select id="status">
+    <option>Non Pregnant</option>
+    <option>Pregnant</option>
+    <option>Pregnant & Milking</option>
+    <option>Milking</option>
+    <option>Near to Delivery</option>
+  </select>
+
+  <button onclick="saveCow()">Save Cow</button>
+</div>
+
+<!-- LIST -->
+<div id="cowList"></div>
+
+</div>
+
+<!-- ===== ACTIVE PAGE ===== -->
+<script>
+  const links=document.querySelectorAll(".nav-link,.bottom-nav a");
+  const current=location.pathname.split("/").pop();
+  links.forEach(l=>{
+    if(l.getAttribute("href")===current)l.classList.add("active");
+  });
+</script>
+
+<!-- ===== FIREBASE ===== -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore,collection,addDoc,getDocs,deleteDoc,doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from
+    "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged, signOut } from
+    "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-const app=initializeApp({apiKey:"AIzaSyC4lH4ViCEhQbvNt6nLXmfR-AhAa1-b6Bk",projectId:"pgdairy-63765"});
-const db=getFirestore(app);
+  const firebaseConfig={
+    apiKey:"AIzaSyC4lH4ViCEhQbvNt6nLXmfR-AhAa1-b6Bk",
+    authDomain:"pgdairy-63765.firebaseapp.com",
+    projectId:"pgdairy-63765",
+    appId:"1:460696117464:web:410ce4a62e899d8567f7ad"
+  };
 
-window.save=async()=>{
- await addDoc(collection(db,"cows"),{
-  cowId:id.value,
-  breed:breed.value,
-  insemination:insemination.value,
-  medical:medical.value
- });
- load();
-};
+  const app=initializeApp(firebaseConfig);
+  const db=getFirestore(app);
+  const auth=getAuth(app);
 
-async function load(){
- list.innerHTML="";
- (await getDocs(collection(db,"cows"))).forEach(d=>{
-  list.innerHTML+=`
-   <div class="box">
-    ${d.data().cowId} - ${d.data().breed}
-    <button onclick="del('${d.id}')">Delete</button>
-   </div>`;
- });
-}
-window.del=async i=>{await deleteDoc(doc(db,"cows",i));load();}
-load();
+  onAuthStateChanged(auth,u=>{
+    if(!u)location.href="login.html";
+  });
+
+  window.saveCow=async()=>{
+    await addDoc(collection(db,"cows"),{
+      cowName:cowName.value,
+      cowId:cowId.value,
+      purchaseDate:purchaseDate.value,
+      inseminationDate:inseminationDate.value,
+      capacity:Number(capacity.value),
+      status:status.value,
+      createdAt:new Date()
+    });
+    loadCows();
+    cowName.value=cowId.value=capacity.value="";
+  };
+
+  async function loadCows(){
+    cowList.innerHTML="";
+    const snap=await getDocs(collection(db,"cows"));
+    snap.forEach(d=>{
+      const c=d.data();
+      cowList.innerHTML+=`
+        <div class="record">
+          <b>${c.cowName}</b> (${c.cowId})<br>
+          🗓 Purchase: ${c.purchaseDate || "-"}<br>
+          💉 Insemination: ${c.inseminationDate || "-"}<br>
+          🥛 Capacity: ${c.capacity} L/day<br>
+          <span class="status">Status: ${c.status}</span><br><br>
+          <button onclick="deleteCow('${d.id}')">Delete</button>
+        </div>`;
+    });
+  }
+
+  window.deleteCow=async(id)=>{
+    await deleteDoc(doc(db,"cows",id));
+    loadCows();
+  };
+
+  loadCows();
+
+  window.logout=()=>{
+    signOut(auth).then(()=>location.href="login.html");
+  };
 </script>
 
 </body>
