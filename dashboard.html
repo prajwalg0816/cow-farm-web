@@ -1,177 +1,78 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <style>
-    body { font-family: Arial; margin: 0; background: #f4f6f8; }
-    header { background: #2e7d32; color: white; padding: 20px; text-align: center; }
-    nav { background: #1b5e20; padding: 10px; text-align: center; }
-    nav a { color: white; margin: 10px; text-decoration: none; font-weight: bold; }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 15px;
-      padding: 15px;
-    }
-
-    .card {
-      background: white;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-
-    .value {
-      font-size: 22px;
-      font-weight: bold;
-    }
-
-    .green { color: #2e7d32; }
-    .red { color: #c62828; }
-    .blue { color: #1565c0; }
-
-    .section {
-      background: white;
-      margin: 15px;
-      padding: 15px;
-      border-radius: 10px;
-    }
-  </style>
+<style>
+body{
+ margin:0;
+ font-family:Segoe UI;
+ background:#0b0f14;
+ color:white;
+}
+header{
+ padding:20px;
+ text-align:center;
+ background:#111827;
+ font-size:22px;
+ color:#f9c74f;
+}
+.grid{
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+ gap:15px;
+ padding:20px;
+}
+.card{
+ background:rgba(255,255,255,0.08);
+ backdrop-filter:blur(12px);
+ border-radius:16px;
+ padding:20px;
+ text-align:center;
+ box-shadow:0 10px 30px rgba(0,0,0,.6);
+}
+.value{
+ font-size:26px;
+ font-weight:bold;
+ color:#f9c74f;
+}
+</style>
 </head>
 
 <body>
 
-<header>
-  <h1>🐄 Cow Farm Dashboard</h1>
-  <p>Live Firebase Data</p>
-</header>
+<header>🐄 PG Dairy – Dashboard</header>
 
-<nav>
-  <a href="dashboard.html">Dashboard</a>
-  <a href="cows.html">Cows</a>
-  <a href="milk.html">Milk</a>
-  <a href="expenses.html">Expenses</a>
-  <a href="finance.html">Finance</a>
-</nav>
-
-<!-- 🔐 AUTH CHECK -->
-<script type="module">
-  import { getAuth, onAuthStateChanged } from
-  "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-  onAuthStateChanged(auth, user => {
-    if (!user) window.location.href = "login.html";
-  });
-</script>
-
-<!-- SUMMARY CARDS -->
 <div class="grid">
-  <div class="card">
-    <h3>Total Cows</h3>
-    <div class="value blue" id="totalCows">0</div>
-  </div>
-
-  <div class="card">
-    <h3>Total Milk</h3>
-    <div class="value blue" id="totalMilk">0 L</div>
-  </div>
-
-  <div class="card">
-    <h3>Total Milk Income</h3>
-    <div class="value green">₹<span id="milkIncome">0</span></div>
-  </div>
-
-  <div class="card">
-    <h3>Total Expenses</h3>
-    <div class="value red">₹<span id="totalExpenses">0</span></div>
-  </div>
-
-  <div class="card">
-    <h3>Net Profit / Loss</h3>
-    <div class="value" id="netProfit">₹0</div>
-  </div>
+ <div class="card">Cows<div class="value" id="cows">0</div></div>
+ <div class="card">Milk Income<div class="value">₹<span id="income">0</span></div></div>
+ <div class="card">Expenses<div class="value">₹<span id="expense">0</span></div></div>
+ <div class="card">Profit<div class="value">₹<span id="profit">0</span></div></div>
 </div>
 
-<!-- LOANS -->
-<div class="section">
-  <h3>🏦 Advance & Loan Summary</h3>
-  <div id="loanList">Loading...</div>
-</div>
-
-<!-- 🔥 FIREBASE LOGIC -->
 <script type="module">
-  import { initializeApp } from
-  "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import {
-    getFirestore, collection, getDocs
-  } from
-  "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getAuth } from
-  "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore,collection,getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-  // 🔥 YOUR FIREBASE CONFIG
-  const firebaseConfig = {
-    apiKey: "AIzaSyC4lH4ViCEhQbvNt6nLXmfR-AhAa1-b6Bk",
-    authDomain: "pgdairy-63765.firebaseapp.com",
-    projectId: "pgdairy-63765",
-    appId: "1:460696117464:web:410ce4a62e899d8567f7ad"
-  };
+const app=initializeApp({
+ apiKey:"AIzaSyC4lH4ViCEhQbvNt6nLXmfR-AhAa1-b6Bk",
+ projectId:"pgdairy-63765"
+});
+const db=getFirestore(app);
+const auth=getAuth(app);
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
-
-  // LOAD DASHBOARD DATA
-  async function loadDashboard() {
-
-    // 🐄 Cows
-    const cowsSnap = await getDocs(collection(db, "cows"));
-    document.getElementById("totalCows").innerText = cowsSnap.size;
-
-    // 🥛 Milk
-    let totalMilk = 0;
-    let milkIncome = 0;
-    const milkSnap = await getDocs(collection(db, "milk"));
-    milkSnap.forEach(doc => {
-      const m = doc.data();
-      totalMilk += m.total;
-      milkIncome += m.income;
-    });
-
-    document.getElementById("totalMilk").innerText = totalMilk + " L";
-    document.getElementById("milkIncome").innerText = milkIncome;
-
-    // 💸 Expenses
-    let totalExpenses = 0;
-    const expSnap = await getDocs(collection(db, "expenses"));
-    expSnap.forEach(doc => {
-      totalExpenses += doc.data().amount;
-    });
-    document.getElementById("totalExpenses").innerText = totalExpenses;
-
-    // 📈 Profit / Loss
-    const profit = milkIncome - totalExpenses;
-    const profitBox = document.getElementById("netProfit");
-    profitBox.innerText = "₹" + profit;
-    profitBox.className = profit >= 0 ? "value green" : "value red";
-
-    // 🏦 Finance
-    let financeHtml = "";
-    const financeSnap = await getDocs(collection(db, "finance"));
-    financeSnap.forEach(doc => {
-      const f = doc.data();
-      financeHtml += `<p>• ${f.type} from ${f.source}: ₹${f.amount}</p>`;
-    });
-
-    document.getElementById("loanList").innerHTML =
-      financeHtml || "<p>No finance records</p>";
-  }
-
-  loadDashboard();
+onAuthStateChanged(auth,async u=>{
+ if(!u)location.href="login.html";
+ cows.innerText=(await getDocs(collection(db,"cows"))).size;
+ let inc=0,exp=0;
+ (await getDocs(collection(db,"milk"))).forEach(d=>inc+=d.data().income);
+ (await getDocs(collection(db,"expenses"))).forEach(d=>exp+=d.data().amount);
+ income.innerText=inc;
+ expense.innerText=exp;
+ profit.innerText=inc-exp;
+});
 </script>
 
 </body>
