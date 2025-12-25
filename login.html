@@ -3,32 +3,70 @@
 <head>
   <title>PG Dairy Login</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body{
+      margin:0;
+      height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+      font-family:Segoe UI,Arial;
+      color:white;
+    }
+    .card{
+      backdrop-filter:blur(15px);
+      background:rgba(255,255,255,0.08);
+      padding:30px;
+      border-radius:16px;
+      width:320px;
+      box-shadow:0 20px 40px rgba(0,0,0,0.6);
+    }
+    h2{text-align:center;color:#f9c74f;}
+    input,button{
+      width:100%;
+      padding:12px;
+      margin-top:12px;
+      border:none;
+      border-radius:8px;
+    }
+    input{background:#111;color:white;}
+    button{
+      background:linear-gradient(135deg,#f9c74f,#f9844a);
+      font-weight:bold;
+      cursor:pointer;
+    }
+  </style>
 </head>
+
 <body>
 
-<h2>🔐 PG Dairy Login</h2>
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
-<button onclick="login()">Login</button>
+<div class="card">
+  <h2>🔐 PG Dairy</h2>
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyC4lH4ViCEhQbvNt6nLXmfR-AhAa1-b6Bk",
-  authDomain: "pgdairy-63765.firebaseapp.com",
-  projectId: "pgdairy-63765",
-  appId: "1:460696117464:web:410ce4a62e899d8567f7ad"
+const firebaseConfig={
+ apiKey:"AIzaSyC4lH4ViCEhQbvNt6nLXmfR-AhAa1-b6Bk",
+ authDomain:"pgdairy-63765.firebaseapp.com",
+ projectId:"pgdairy-63765",
+ appId:"1:460696117464:web:410ce4a62e899d8567f7ad"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
 
-window.login = () => {
-  signInWithEmailAndPassword(auth, email.value, password.value)
-    .then(() => location.href = "dashboard.html")
-    .catch(e => alert(e.message));
+window.login=()=>{
+ signInWithEmailAndPassword(auth,email.value,password.value)
+ .then(()=>location.href="dashboard.html")
+ .catch(e=>alert(e.message));
 };
 </script>
 
