@@ -1,173 +1,82 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Expenses</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Expenses</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <style>
-    body { font-family: Arial; margin: 0; background: #f4f6f8; }
-    header { background: #c62828; color: white; padding: 20px; text-align: center; }
-    nav { background: #8e0000; padding: 10px; text-align: center; }
-    nav a { color: white; margin: 10px; text-decoration: none; font-weight: bold; }
-
-    .box {
-      background: white;
-      margin: 15px;
-      padding: 15px;
-      border-radius: 10px;
-    }
-
-    input, select, button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 8px;
-    }
-
-    button {
-      background: #c62828;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .record {
-      background: #ffebee;
-      margin: 15px;
-      padding: 15px;
-      border-radius: 10px;
-    }
-
-    .danger {
-      background: black;
-      margin-top: 10px;
-    }
-  </style>
+<style>
+body{margin:0;font-family:Segoe UI;background:#0b0f14;color:white;}
+header{text-align:center;padding:15px;color:#f94144;}
+.box{
+ margin:15px;
+ padding:20px;
+ background:rgba(255,255,255,.08);
+ backdrop-filter:blur(12px);
+ border-radius:16px;
+}
+input,button{
+ width:100%;
+ padding:12px;
+ margin-top:10px;
+ border:none;
+ border-radius:8px;
+ background:#111;
+ color:white;
+}
+button{
+ background:linear-gradient(135deg,#f94144,#f3722c);
+ font-weight:bold;
+}
+.record{
+ margin:15px;
+ padding:15px;
+ border-radius:14px;
+ background:rgba(255,255,255,.06);
+}
+</style>
 </head>
 
 <body>
 
-<header>
-  <h1>💸 Expenses</h1>
-</header>
+<header>💸 Expenses</header>
 
-<nav>
-  <a href="dashboard.html">Dashboard</a>
-  <a href="cows.html">Cows</a>
-  <a href="milk.html">Milk</a>
-  <a href="expenses.html">Expenses</a>
-  <a href="finance.html">Finance</a>
-</nav>
-
-<!-- 🔐 AUTH CHECK -->
-<script type="module">
-  import { getAuth, onAuthStateChanged } from
-  "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-  onAuthStateChanged(auth, user => {
-    if (!user) window.location.href = "login.html";
-  });
-</script>
-
-<!-- EXPENSE ENTRY -->
 <div class="box">
-  <h2>Add Expense</h2>
-
-  <label>Date</label>
-  <input type="date" id="date">
-
-  <label>Category</label>
-  <select id="category">
-    <option>Feed</option>
-    <option>Medicine</option>
-    <option>Electricity</option>
-    <option>Labor</option>
-    <option>Maintenance</option>
-    <option>Other</option>
-  </select>
-
-  <label>Amount (₹)</label>
-  <input type="number" id="amount">
-
-  <label>Notes</label>
-  <input type="text" id="note">
-
-  <button onclick="saveExpense()">Save Expense</button>
+ <input type="date" id="date">
+ <input id="amount" placeholder="Amount">
+ <button onclick="save()">Save Expense</button>
 </div>
 
-<!-- EXPENSE RECORDS -->
-<div id="expenseList"></div>
+<div id="list"></div>
 
-<!-- 🔥 FIREBASE LOGIC -->
 <script type="module">
-  import { initializeApp } from
-  "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import {
-    getFirestore, collection, addDoc,
-    getDocs, deleteDoc, doc
-  } from
-  "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getAuth } from
-  "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore,collection,addDoc,getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  // 🔥 YOUR FIREBASE CONFIG
-  const firebaseConfig = {
-    apiKey: "AIzaSyC4lH4ViCEhQbvNt6nLXmfR-AhAa1-b6Bk",
-    authDomain: "pgdairy-63765.firebaseapp.com",
-    projectId: "pgdairy-63765",
-    appId: "1:460696117464:web:410ce4a62e899d8567f7ad"
-  };
+const app=initializeApp({apiKey:"AIzaSyC4lH4ViCEhQbvNt6nLXmfR-AhAa1-b6Bk",projectId:"pgdairy-63765"});
+const db=getFirestore(app);
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
+date.value=new Date().toISOString().split("T")[0];
 
-  // Default date = today
-  document.getElementById("date").value =
-    new Date().toISOString().split("T")[0];
+window.save=async()=>{
+ await addDoc(collection(db,"expenses"),{
+  date:date.value,
+  amount:Number(amount.value)
+ });
+ load();
+ amount.value="";
+};
 
-  // SAVE EXPENSE
-  window.saveExpense = async function () {
-    await addDoc(collection(db, "expenses"), {
-      date: date.value,
-      category: category.value,
-      amount: Number(amount.value),
-      note: note.value,
-      createdAt: new Date()
-    });
-
-    alert("✅ Expense saved to cloud");
-    amount.value = note.value = "";
-    loadExpenses();
-  };
-
-  // LOAD EXPENSES
-  async function loadExpenses() {
-    expenseList.innerHTML = "";
-    const snap = await getDocs(collection(db, "expenses"));
-
-    snap.forEach(docSnap => {
-      const e = docSnap.data();
-      expenseList.innerHTML += `
-        <div class="record">
-          <b>Date:</b> ${e.date}<br>
-          <b>Category:</b> ${e.category}<br>
-          <b>Amount:</b> ₹${e.amount}<br>
-          <b>Note:</b> ${e.note || "-"}<br>
-          <button class="danger"
-            onclick="deleteExpense('${docSnap.id}')">Delete</button>
-        </div>
-      `;
-    });
-  }
-
-  // DELETE EXPENSE
-  window.deleteExpense = async function (id) {
-    await deleteDoc(doc(db, "expenses", id));
-    loadExpenses();
-  };
-
-  loadExpenses();
+async function load(){
+ list.innerHTML="";
+ (await getDocs(collection(db,"expenses"))).forEach(d=>{
+  list.innerHTML+=`
+   <div class="record">
+    📅 ${d.data().date}<br>
+    💸 ₹${d.data().amount}
+   </div>`;
+ });
+}
+load();
 </script>
 
 </body>
