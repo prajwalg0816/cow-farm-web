@@ -1,78 +1,261 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PG Dairy Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<style>
-body{
- margin:0;
- font-family:Segoe UI;
- background:#0b0f14;
- color:white;
-}
-header{
- padding:20px;
- text-align:center;
- background:#111827;
- font-size:22px;
- color:#f9c74f;
-}
-.grid{
- display:grid;
- grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
- gap:15px;
- padding:20px;
-}
-.card{
- background:rgba(255,255,255,0.08);
- backdrop-filter:blur(12px);
- border-radius:16px;
- padding:20px;
- text-align:center;
- box-shadow:0 10px 30px rgba(0,0,0,.6);
-}
-.value{
- font-size:26px;
- font-weight:bold;
- color:#f9c74f;
-}
-</style>
+  <style>
+    body{
+      margin:0;
+      font-family:Segoe UI,Arial;
+      background:#0b0f14;
+      color:white;
+    }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar{
+      position:fixed;
+      left:0;
+      top:0;
+      height:100vh;
+      width:220px;
+      background:rgba(20,20,20,0.9);
+      backdrop-filter:blur(14px);
+      padding:20px;
+      box-shadow:5px 0 30px rgba(0,0,0,0.6);
+    }
+
+    .sidebar h2{
+      color:#f9c74f;
+      text-align:center;
+      margin-bottom:20px;
+    }
+
+    .sidebar a,
+    .sidebar button{
+      display:block;
+      margin:8px 0;
+      padding:12px;
+      border-radius:10px;
+      text-decoration:none;
+      background:rgba(255,255,255,0.06);
+      color:white;
+      font-weight:600;
+      border:none;
+      cursor:pointer;
+      text-align:left;
+    }
+
+    .sidebar a:hover,
+    .sidebar button:hover{
+      background:linear-gradient(135deg,#f9c74f,#f9844a);
+      color:black;
+    }
+
+    .sidebar a.active{
+      background:linear-gradient(135deg,#90dbf4,#4cc9f0);
+      color:black;
+    }
+
+    /* ===== CONTENT ===== */
+    .content{
+      margin-left:240px;
+      padding:20px;
+    }
+
+    header{
+      text-align:center;
+      font-size:24px;
+      color:#f9c74f;
+      margin-bottom:20px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:20px;
+    }
+
+    .card{
+      background:rgba(255,255,255,0.08);
+      backdrop-filter:blur(12px);
+      border-radius:18px;
+      padding:20px;
+      text-align:center;
+      box-shadow:0 10px 30px rgba(0,0,0,.6);
+    }
+
+    .card h3{
+      font-size:16px;
+      margin-bottom:10px;
+      color:#ddd;
+    }
+
+    .value{
+      font-size:28px;
+      font-weight:bold;
+      color:#f9c74f;
+    }
+
+    .green{color:#4cc9f0;}
+    .red{color:#f94144;}
+
+    /* ===== MOBILE BOTTOM NAV ===== */
+    .bottom-nav{
+      display:none;
+    }
+
+    @media(max-width:768px){
+      .sidebar{
+        display:none;
+      }
+      .content{
+        margin-left:0;
+        padding-bottom:90px;
+      }
+      .bottom-nav{
+        display:flex;
+        position:fixed;
+        bottom:0;
+        left:0;
+        width:100%;
+        background:rgba(20,20,20,0.95);
+        justify-content:space-around;
+        padding:12px 0;
+        backdrop-filter:blur(10px);
+      }
+      .bottom-nav a{
+        font-size:22px;
+        text-decoration:none;
+        color:#f9c74f;
+      }
+      .bottom-nav a.active{
+        color:#4cc9f0;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-<header>🐄 PG Dairy – Dashboard</header>
-
-<div class="grid">
- <div class="card">Cows<div class="value" id="cows">0</div></div>
- <div class="card">Milk Income<div class="value">₹<span id="income">0</span></div></div>
- <div class="card">Expenses<div class="value">₹<span id="expense">0</span></div></div>
- <div class="card">Profit<div class="value">₹<span id="profit">0</span></div></div>
+<!-- ===== SIDEBAR ===== -->
+<div class="sidebar">
+  <h2>🐄 PG Dairy</h2>
+  <a href="dashboard.html" class="nav-link">📊 Dashboard</a>
+  <a href="cows.html" class="nav-link">🐄 Cows</a>
+  <a href="milk.html" class="nav-link">🥛 Milk</a>
+  <a href="expenses.html" class="nav-link">💸 Expenses</a>
+  <a href="finance.html" class="nav-link">💰 Finance</a>
+  <a href="reports.html" class="nav-link">📑 Reports</a>
+  <button onclick="logout()">🚪 Logout</button>
 </div>
 
+<!-- ===== BOTTOM NAV (MOBILE) ===== -->
+<div class="bottom-nav">
+  <a href="dashboard.html">📊</a>
+  <a href="cows.html">🐄</a>
+  <a href="milk.html">🥛</a>
+  <a href="expenses.html">💸</a>
+  <a href="finance.html">💰</a>
+  <a href="reports.html">📑</a>
+</div>
+
+<!-- ===== CONTENT ===== -->
+<div class="content">
+
+<header>📊 Farm Overview</header>
+
+<div class="grid">
+  <div class="card">
+    <h3>Total Cows</h3>
+    <div class="value" id="totalCows">0</div>
+  </div>
+
+  <div class="card">
+    <h3>Total Milk Income</h3>
+    <div class="value green">₹<span id="milkIncome">0</span></div>
+  </div>
+
+  <div class="card">
+    <h3>Total Expenses</h3>
+    <div class="value red">₹<span id="totalExpenses">0</span></div>
+  </div>
+
+  <div class="card">
+    <h3>Net Profit</h3>
+    <div class="value" id="netProfit">₹0</div>
+  </div>
+</div>
+
+</div>
+
+<!-- ===== ACTIVE PAGE HIGHLIGHT ===== -->
+<script>
+  const links = document.querySelectorAll(".nav-link, .bottom-nav a");
+  const current = location.pathname.split("/").pop();
+
+  links.forEach(link=>{
+    if(link.getAttribute("href") === current){
+      link.classList.add("active");
+    }
+  });
+</script>
+
+<!-- ===== FIREBASE + DATA ===== -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore,collection,getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, getDocs } from
+    "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged, signOut } from
+    "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-const app=initializeApp({
- apiKey:"AIzaSyC4lH4ViCEhQbvNt6nLXmfR-AhAa1-b6Bk",
- projectId:"pgdairy-63765"
-});
-const db=getFirestore(app);
-const auth=getAuth(app);
+  const firebaseConfig = {
+    apiKey: "AIzaSyC4lH4ViCEhQbvNt6nLXmfR-AhAa1-b6Bk",
+    authDomain: "pgdairy-63765.firebaseapp.com",
+    projectId: "pgdairy-63765",
+    appId: "1:460696117464:web:410ce4a62e899d8567f7ad"
+  };
 
-onAuthStateChanged(auth,async u=>{
- if(!u)location.href="login.html";
- cows.innerText=(await getDocs(collection(db,"cows"))).size;
- let inc=0,exp=0;
- (await getDocs(collection(db,"milk"))).forEach(d=>inc+=d.data().income);
- (await getDocs(collection(db,"expenses"))).forEach(d=>exp+=d.data().amount);
- income.innerText=inc;
- expense.innerText=exp;
- profit.innerText=inc-exp;
-});
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  // AUTH CHECK
+  onAuthStateChanged(auth, async user => {
+    if (!user) {
+      location.href = "login.html";
+      return;
+    }
+
+    // LOAD DATA
+    const cowsSnap = await getDocs(collection(db,"cows"));
+    document.getElementById("totalCows").innerText = cowsSnap.size;
+
+    let income = 0, expense = 0;
+
+    (await getDocs(collection(db,"milk"))).forEach(d=>{
+      income += d.data().income;
+    });
+
+    (await getDocs(collection(db,"expenses"))).forEach(d=>{
+      expense += d.data().amount;
+    });
+
+    document.getElementById("milkIncome").innerText = income;
+    document.getElementById("totalExpenses").innerText = expense;
+
+    const profit = income - expense;
+    const profitBox = document.getElementById("netProfit");
+    profitBox.innerText = "₹" + profit;
+    profitBox.style.color = profit >= 0 ? "#4cc9f0" : "#f94144";
+  });
+
+  // LOGOUT
+  window.logout = function(){
+    signOut(auth).then(()=>{
+      location.href = "login.html";
+    });
+  };
 </script>
 
 </body>
