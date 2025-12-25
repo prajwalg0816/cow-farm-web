@@ -1,167 +1,88 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Milking Entry</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Milk Entry</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <style>
-    body { font-family: Arial; margin: 0; background: #f4f6f8; }
-    header { background: #2e7d32; color: white; padding: 20px; text-align: center; }
-    nav { background: #1b5e20; padding: 10px; text-align: center; }
-    nav a { color: white; margin: 10px; text-decoration: none; font-weight: bold; }
-
-    .box { background: white; margin: 15px; padding: 15px; border-radius: 10px; }
-    input, button { width: 100%; padding: 10px; margin-top: 8px; }
-
-    button {
-      background: #2e7d32;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .record {
-      background: #e8f5e9;
-      margin: 15px;
-      padding: 15px;
-      border-radius: 10px;
-    }
-
-    .danger {
-      background: #c62828;
-      margin-top: 10px;
-    }
-  </style>
+<style>
+body{margin:0;font-family:Segoe UI;background:#0b0f14;color:white;}
+header{text-align:center;padding:15px;color:#f9c74f;}
+.box{
+ margin:15px;
+ padding:20px;
+ background:rgba(255,255,255,.08);
+ backdrop-filter:blur(12px);
+ border-radius:16px;
+}
+input,button{
+ width:100%;
+ padding:12px;
+ margin-top:10px;
+ border:none;
+ border-radius:8px;
+ background:#111;
+ color:white;
+}
+button{
+ background:linear-gradient(135deg,#f9c74f,#f9844a);
+ font-weight:bold;
+ cursor:pointer;
+}
+.record{
+ margin:15px;
+ padding:15px;
+ border-radius:14px;
+ background:rgba(255,255,255,.06);
+}
+</style>
 </head>
 
 <body>
 
-<header>
-  <h1>🥛 Milking Entry</h1>
-</header>
+<header>🥛 Milk Entry</header>
 
-<nav>
-  <a href="dashboard.html">Dashboard</a>
-  <a href="cows.html">Cows</a>
-  <a href="milk.html">Milk</a>
-  <a href="expenses.html">Expenses</a>
-  <a href="finance.html">Finance</a>
-</nav>
-
-<!-- 🔐 AUTH CHECK -->
-<script type="module">
-  import { getAuth, onAuthStateChanged } from
-  "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-  onAuthStateChanged(auth, user => {
-    if (!user) window.location.href = "login.html";
-  });
-</script>
-
-<!-- MILK ENTRY FORM -->
 <div class="box">
-  <h2>Daily Milk Entry</h2>
-
-  <label>Date</label>
-  <input type="date" id="date">
-
-  <label>Morning Milk (L)</label>
-  <input type="number" id="morning">
-
-  <label>Evening Milk (L)</label>
-  <input type="number" id="evening">
-
-  <label>Rate per Liter (₹)</label>
-  <input type="number" id="price" value="35">
-
-  <button onclick="saveMilk()">Save Milk</button>
+ <input type="date" id="date">
+ <input id="morning" placeholder="Morning Milk (L)">
+ <input id="evening" placeholder="Evening Milk (L)">
+ <input id="price" value="35">
+ <button onclick="saveMilk()">Save Milk</button>
 </div>
 
-<!-- MILK RECORDS -->
-<div id="milkList"></div>
+<div id="list"></div>
 
-<!-- 🔥 FIREBASE LOGIC -->
 <script type="module">
-  import { initializeApp } from
-  "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import {
-    getFirestore, collection, addDoc,
-    getDocs, deleteDoc, doc
-  } from
-  "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getAuth } from
-  "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore,collection,addDoc,getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  // 🔥 Firebase config (YOUR PROJECT)
-  const firebaseConfig = {
-    apiKey: "AIzaSyC4lH4ViCEhQbvNt6nLXmfR-AhAa1-b6Bk",
-    authDomain: "pgdairy-63765.firebaseapp.com",
-    projectId: "pgdairy-63765",
-    appId: "1:460696117464:web:410ce4a62e899d8567f7ad"
-  };
+const app=initializeApp({apiKey:"AIzaSyC4lH4ViCEhQbvNt6nLXmfR-AhAa1-b6Bk",projectId:"pgdairy-63765"});
+const db=getFirestore(app);
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
+date.value=new Date().toISOString().split("T")[0];
 
-  // Default date = today
-  document.getElementById("date").value =
-    new Date().toISOString().split("T")[0];
+window.saveMilk=async()=>{
+ let total=Number(morning.value)+Number(evening.value);
+ await addDoc(collection(db,"milk"),{
+  date:date.value,
+  total,
+  income:total*Number(price.value)
+ });
+ load();
+ morning.value=evening.value="";
+};
 
-  // SAVE MILK
-  window.saveMilk = async function () {
-    let m = Number(morning.value);
-    let e = Number(evening.value);
-    let p = Number(price.value);
-    let total = m + e;
-    let income = total * p;
-
-    if (total < 33 || total > 37) {
-      alert("⚠ Milk outside expected range (33–37 L)");
-    }
-
-    await addDoc(collection(db, "milk"), {
-      date: date.value,
-      morning: m,
-      evening: e,
-      total,
-      price: p,
-      income,
-      createdAt: new Date()
-    });
-
-    alert("✅ Milk saved to cloud");
-    morning.value = evening.value = "";
-    loadMilk();
-  };
-
-  // LOAD MILK RECORDS
-  async function loadMilk() {
-    milkList.innerHTML = "";
-    const snap = await getDocs(collection(db, "milk"));
-
-    snap.forEach(docSnap => {
-      const m = docSnap.data();
-      milkList.innerHTML += `
-        <div class="record">
-          <b>Date:</b> ${m.date}<br>
-          <b>Total Milk:</b> ${m.total} L<br>
-          <b>Income:</b> ₹${m.income}<br>
-          <button class="danger"
-            onclick="deleteMilk('${docSnap.id}')">Delete</button>
-        </div>
-      `;
-    });
-  }
-
-  // DELETE MILK RECORD
-  window.deleteMilk = async function (id) {
-    await deleteDoc(doc(db, "milk", id));
-    loadMilk();
-  };
-
-  loadMilk();
+async function load(){
+ list.innerHTML="";
+ (await getDocs(collection(db,"milk"))).forEach(d=>{
+  list.innerHTML+=`
+   <div class="record">
+    📅 ${d.data().date}<br>
+    🥛 ${d.data().total} L<br>
+    💰 ₹${d.data().income}
+   </div>`;
+ });
+}
+load();
 </script>
 
 </body>
