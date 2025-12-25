@@ -159,16 +159,28 @@
   <input id="cowName" placeholder="Cow Name">
   <input id="cowId" placeholder="Cow ID">
   <input type="date" id="purchaseDate">
-  <input type="date" id="inseminationDate">
   <input type="number" id="capacity" placeholder="Milking Capacity (L/day)">
 
-  <select id="status">
+  <select id="status" onchange="handleStatusChange()">
     <option>Non Pregnant</option>
     <option>Pregnant</option>
     <option>Pregnant & Milking</option>
     <option>Milking</option>
     <option>Near to Delivery</option>
   </select>
+
+  <!-- Pregnancy Fields -->
+  <div id="inseminationBox" style="display:none;">
+    <input type="date" id="inseminationDate" onchange="calculateDelivery()">
+  </div>
+
+  <div id="deliveryBox" style="display:none;">
+    <input type="date" id="deliveryDate" readonly>
+  </div>
+
+  <div id="monthsBox" style="display:none;">
+    <input type="text" id="pregMonths" readonly placeholder="Pregnancy Months">
+  </div>
 
   <button onclick="saveCow()">Save Cow</button>
 </div>
@@ -187,7 +199,7 @@
   });
 </script>
 
-<!-- ===== FIREBASE ===== -->
+<!-- ===== FIREBASE + LOGIC ===== -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from
@@ -210,18 +222,51 @@
     if(!u)location.href="login.html";
   });
 
+  window.handleStatusChange=function(){
+    const show = status.value==="Pregnant" || status.value==="Pregnant & Milking";
+    inseminationBox.style.display = show ? "block":"none";
+    deliveryBox.style.display = show ? "block":"none";
+    monthsBox.style.display = show ? "block":"none";
+    if(!show){
+      inseminationDate.value="";
+      deliveryDate.value="";
+      pregMonths.value="";
+    }
+  };
+
+  window.calculateDelivery=function(){
+    if(!inseminationDate.value) return;
+    const d=new Date(inseminationDate.value);
+    d.setDate(d.getDate()+283);
+    deliveryDate.value=d.toISOString().split("T")[0];
+    updatePregnancyMonths();
+  };
+
+  function updatePregnancyMonths(){
+    if(!inseminationDate.value) return;
+    const start=new Date(inseminationDate.value);
+    const today=new Date();
+    let months=(today.getFullYear()-start.getFullYear())*12+(today.getMonth()-start.getMonth());
+    if(months<0)months=0;
+    if(months>9)months=9;
+    pregMonths.value=months+" months";
+  }
+
+  setInterval(updatePregnancyMonths,86400000);
+
   window.saveCow=async()=>{
     await addDoc(collection(db,"cows"),{
       cowName:cowName.value,
       cowId:cowId.value,
       purchaseDate:purchaseDate.value,
-      inseminationDate:inseminationDate.value,
+      inseminationDate:inseminationDate.value||null,
+      expectedDelivery:deliveryDate.value||null,
+      pregnancyMonths:pregMonths.value||null,
       capacity:Number(capacity.value),
       status:status.value,
       createdAt:new Date()
     });
     loadCows();
-    cowName.value=cowId.value=capacity.value="";
   };
 
   async function loadCows(){
@@ -232,8 +277,10 @@
       cowList.innerHTML+=`
         <div class="record">
           <b>${c.cowName}</b> (${c.cowId})<br>
-          🗓 Purchase: ${c.purchaseDate || "-"}<br>
-          💉 Insemination: ${c.inseminationDate || "-"}<br>
+          🗓 Purchase: ${c.purchaseDate||"-"}<br>
+          💉 Insemination: ${c.inseminationDate||"-"}<br>
+          🍼 Expected Delivery: ${c.expectedDelivery||"-"}<br>
+          🤰 Pregnancy: ${c.pregnancyMonths||"-"}<br>
           🥛 Capacity: ${c.capacity} L/day<br>
           <span class="status">Status: ${c.status}</span><br><br>
           <button onclick="deleteCow('${d.id}')">Delete</button>
