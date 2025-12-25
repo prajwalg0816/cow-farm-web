@@ -15,57 +15,93 @@
     /* SIDEBAR */
     .sidebar{
       position:fixed;
-      left:0;top:0;
-      width:220px;height:100vh;
-      background:rgba(20,20,20,.9);
+      left:0; top:0;
+      width:220px; height:100vh;
+      background:rgba(20,20,20,0.9);
       padding:20px;
     }
     .sidebar a,.sidebar button{
-      display:block;margin:8px 0;padding:12px;
-      border-radius:10px;border:none;
-      background:rgba(255,255,255,.06);
-      color:white;text-decoration:none;
-      cursor:pointer;font-weight:600;
+      display:block;
+      margin:8px 0;
+      padding:12px;
+      border-radius:10px;
+      border:none;
+      background:rgba(255,255,255,0.06);
+      color:white;
+      text-decoration:none;
+      cursor:pointer;
+      font-weight:600;
     }
-    .sidebar a.active{background:#4cc9f0;color:black;}
+    .sidebar a.active{
+      background:#4cc9f0;
+      color:black;
+    }
 
     /* CONTENT */
-    .content{margin-left:240px;padding:20px;}
-    header{text-align:center;color:#f9c74f;font-size:24px;}
+    .content{
+      margin-left:240px;
+      padding:20px;
+    }
+    header{
+      text-align:center;
+      font-size:24px;
+      color:#f9c74f;
+      margin-bottom:20px;
+    }
 
     .top-buttons{
-      display:flex;gap:10px;margin:20px 0;
+      display:flex;
+      gap:10px;
+      margin-bottom:20px;
     }
     .top-buttons button{
-      flex:1;padding:12px;border:none;border-radius:10px;
+      flex:1;
+      padding:12px;
+      border:none;
+      border-radius:10px;
       background:linear-gradient(135deg,#f9c74f,#f9844a);
-      font-weight:bold;cursor:pointer;
+      font-weight:bold;
+      cursor:pointer;
     }
 
     .box{
-      background:rgba(255,255,255,.08);
-      padding:20px;border-radius:16px;
+      background:rgba(255,255,255,0.08);
+      padding:20px;
+      border-radius:16px;
       margin-bottom:20px;
     }
 
     input,select,button{
-      width:100%;padding:12px;margin-top:10px;
-      border:none;border-radius:10px;
-      background:#111;color:white;
+      width:100%;
+      padding:12px;
+      margin-top:10px;
+      border:none;
+      border-radius:10px;
+      background:#111;
+      color:white;
     }
 
     .record{
-      background:rgba(255,255,255,.06);
-      padding:15px;border-radius:14px;
+      background:rgba(255,255,255,0.06);
+      padding:15px;
+      border-radius:14px;
       margin-bottom:12px;
     }
 
-    .record button{
+    .editBtn{
+      background:#4cc9f0;
+      color:black;
       margin-top:8px;
+    }
+    .delBtn{
       background:#f94144;
+      margin-top:8px;
     }
 
-    .edit{background:#4cc9f0 !important;color:black;}
+    @media(max-width:768px){
+      .sidebar{display:none;}
+      .content{margin-left:0;}
+    }
   </style>
 </head>
 
@@ -91,7 +127,7 @@
   <button onclick="showView()">👁 View Cows</button>
 </div>
 
-<!-- ADD COW FORM -->
+<!-- ADD / EDIT FORM -->
 <div id="addSection" class="box" style="display:none;">
   <h3>Add / Edit Cow</h3>
 
@@ -110,7 +146,7 @@
     <option>Near to Delivery</option>
   </select>
 
-  <!-- CONDITIONAL -->
+  <!-- Pregnancy fields -->
   <div id="inseminationBox" style="display:none;">
     <input type="date" id="inseminationDate" onchange="calculateDelivery()">
   </div>
@@ -126,7 +162,7 @@
   <button onclick="saveCow()">Save Cow</button>
 </div>
 
-<!-- VIEW COWS -->
+<!-- VIEW -->
 <div id="viewSection" class="box" style="display:none;">
   <h3>All Cows</h3>
   <div id="cowList"></div>
@@ -134,114 +170,156 @@
 
 </div>
 
-<!-- FIREBASE -->
+<!-- FIREBASE + LOGIC -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } 
-from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getAuth, signOut } 
-from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged, signOut }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-const app = initializeApp({
-  apiKey:"AIzaSyC4lH4ViCEhQbvNt6nLXmfR-AhAa1-b6Bk",
-  projectId:"pgdairy-63765"
-});
-const db = getFirestore(app);
-const auth = getAuth(app);
-
-/* TOGGLE */
-window.showAdd=()=>{addSection.style.display="block";viewSection.style.display="none";}
-window.showView=()=>{addSection.style.display="none";viewSection.style.display="block";loadCows();}
-
-/* STATUS */
-window.handleStatusChange=()=>{
-  const show = status.value==="Pregnant" || status.value==="Pregnant & Milking";
-  inseminationBox.style.display = show?"block":"none";
-  deliveryBox.style.display = show?"block":"none";
-  monthsBox.style.display = show?"block":"none";
-}
-
-/* DELIVERY */
-window.calculateDelivery=()=>{
-  if(!inseminationDate.value) return;
-  let d=new Date(inseminationDate.value);
-  d.setDate(d.getDate()+283);
-  deliveryDate.value=d.toISOString().split("T")[0];
-  updateMonths();
-}
-
-function updateMonths(){
-  let start=new Date(inseminationDate.value);
-  let today=new Date();
-  let m=(today.getFullYear()-start.getFullYear())*12+(today.getMonth()-start.getMonth());
-  pregMonths.value=Math.min(Math.max(m,0),9)+" months";
-}
-
-/* SAVE */
-window.saveCow=async()=>{
-  const data={
-    cowName:cowName.value,
-    cowId:cowId.value,
-    purchaseDate:purchaseDate.value,
-    inseminationDate:inseminationDate.value||null,
-    expectedDelivery:deliveryDate.value||null,
-    pregnancyMonths:pregMonths.value||null,
-    capacity:+capacity.value,
-    status:status.value
+  // 🔥 FIREBASE CONFIG (CONFIRMED WORKING)
+  const firebaseConfig = {
+    apiKey: "AIzaSyC4lH4ViCEhQbvNt6nLXmfR-AhAa1-b6Bk",
+    authDomain: "pgdairy-63765.firebaseapp.com",
+    projectId: "pgdairy-63765",
+    appId: "1:460696117464:web:410ce4a62e899d8567f7ad"
   };
 
-  if(editId.value){
-    await updateDoc(doc(db,"cows",editId.value),data);
-  }else{
-    await addDoc(collection(db,"cows"),data);
-  }
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
 
-  editId.value="";
-  showView();
-}
-
-/* LOAD */
-async function loadCows(){
-  cowList.innerHTML="";
-  (await getDocs(collection(db,"cows"))).forEach(d=>{
-    const c=d.data();
-    cowList.innerHTML+=`
-      <div class="record">
-        <b>${c.cowName}</b> (${c.cowId})<br>
-        Status: ${c.status}<br>
-        Capacity: ${c.capacity} L/day<br>
-        🤰 ${c.pregnancyMonths||"-"}<br>
-        <button class="edit" onclick="editCow('${d.id}',${JSON.stringify(c).replace(/"/g,'&quot;')})">Edit</button>
-        <button onclick="deleteCow('${d.id}')">Delete</button>
-      </div>`;
+  // AUTH CHECK
+  onAuthStateChanged(auth, user => {
+    if (!user) location.href = "login.html";
   });
-}
 
-/* EDIT */
-window.editCow=(id,c)=>{
-  showAdd();
-  editId.value=id;
-  cowName.value=c.cowName;
-  cowId.value=c.cowId;
-  purchaseDate.value=c.purchaseDate||"";
-  capacity.value=c.capacity;
-  status.value=c.status;
-  handleStatusChange();
-  inseminationDate.value=c.inseminationDate||"";
-  deliveryDate.value=c.expectedDelivery||"";
-  pregMonths.value=c.pregnancyMonths||"";
-}
-
-/* DELETE */
-window.deleteCow=async(id)=>{
-  if(confirm("Delete cow?")){
-    await deleteDoc(doc(db,"cows",id));
+  // TOGGLE SECTIONS
+  window.showAdd = () => {
+    addSection.style.display = "block";
+    viewSection.style.display = "none";
+  };
+  window.showView = () => {
+    addSection.style.display = "none";
+    viewSection.style.display = "block";
     loadCows();
-  }
-}
+  };
 
-/* LOGOUT */
-window.logout=()=>signOut(auth).then(()=>location.href="login.html");
+  // STATUS CHANGE
+  window.handleStatusChange = () => {
+    const show = status.value === "Pregnant" || status.value === "Pregnant & Milking";
+    inseminationBox.style.display = show ? "block" : "none";
+    deliveryBox.style.display = show ? "block" : "none";
+    monthsBox.style.display = show ? "block" : "none";
+    if (!show) {
+      inseminationDate.value = "";
+      deliveryDate.value = "";
+      pregMonths.value = "";
+    }
+  };
+
+  // DELIVERY DATE (+283)
+  window.calculateDelivery = () => {
+    if (!inseminationDate.value) return;
+    const d = new Date(inseminationDate.value);
+    d.setDate(d.getDate() + 283);
+    deliveryDate.value = d.toISOString().split("T")[0];
+    updateMonths();
+  };
+
+  function updateMonths(){
+    if(!inseminationDate.value) return;
+    const start = new Date(inseminationDate.value);
+    const today = new Date();
+    let m = (today.getFullYear()-start.getFullYear())*12 + (today.getMonth()-start.getMonth());
+    if (m < 0) m = 0;
+    if (m > 9) m = 9;
+    pregMonths.value = m + " months";
+  }
+
+  // SAVE
+  window.saveCow = async () => {
+    try {
+      if (!cowName.value || !cowId.value) {
+        alert("Cow Name and Cow ID required");
+        return;
+      }
+
+      const data = {
+        cowName: cowName.value,
+        cowId: cowId.value,
+        purchaseDate: purchaseDate.value || null,
+        inseminationDate: inseminationDate.value || null,
+        expectedDelivery: deliveryDate.value || null,
+        pregnancyMonths: pregMonths.value || null,
+        capacity: Number(capacity.value),
+        status: status.value,
+        createdAt: new Date()
+      };
+
+      if (editId.value) {
+        await updateDoc(doc(db, "cows", editId.value), data);
+      } else {
+        await addDoc(collection(db, "cows"), data);
+      }
+
+      alert("✅ Cow saved successfully");
+      editId.value = "";
+      showView();
+
+    } catch (e) {
+      alert("❌ Error: " + e.message);
+      console.error(e);
+    }
+  };
+
+  // LOAD
+  async function loadCows(){
+    cowList.innerHTML = "";
+    const snap = await getDocs(collection(db, "cows"));
+    snap.forEach(d => {
+      const c = d.data();
+      cowList.innerHTML += `
+        <div class="record">
+          <b>${c.cowName}</b> (${c.cowId})<br>
+          Status: ${c.status}<br>
+          Capacity: ${c.capacity} L/day<br>
+          🤰 ${c.pregnancyMonths || "-"}<br>
+          <button class="editBtn"
+            onclick='editCow("${d.id}", ${JSON.stringify(c).replace(/"/g,"&quot;")})'>Edit</button>
+          <button class="delBtn" onclick="deleteCow('${d.id}')">Delete</button>
+        </div>`;
+    });
+  }
+
+  // EDIT
+  window.editCow = (id, c) => {
+    showAdd();
+    editId.value = id;
+    cowName.value = c.cowName;
+    cowId.value = c.cowId;
+    purchaseDate.value = c.purchaseDate || "";
+    capacity.value = c.capacity || "";
+    status.value = c.status;
+    handleStatusChange();
+    inseminationDate.value = c.inseminationDate || "";
+    deliveryDate.value = c.expectedDelivery || "";
+    pregMonths.value = c.pregnancyMonths || "";
+  };
+
+  // DELETE
+  window.deleteCow = async (id) => {
+    if (confirm("Delete this cow?")) {
+      await deleteDoc(doc(db, "cows", id));
+      loadCows();
+    }
+  };
+
+  // LOGOUT
+  window.logout = () => {
+    signOut(auth).then(() => location.href = "login.html");
+  };
 
 </script>
 
