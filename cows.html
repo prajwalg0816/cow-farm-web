@@ -12,149 +12,90 @@
       color:white;
     }
 
-    /* ===== SIDEBAR ===== */
+    /* SIDEBAR */
     .sidebar{
       position:fixed;
-      left:0;
-      top:0;
-      height:100vh;
-      width:220px;
-      background:rgba(20,20,20,0.9);
-      backdrop-filter:blur(14px);
+      left:0;top:0;
+      width:220px;height:100vh;
+      background:rgba(20,20,20,.9);
       padding:20px;
     }
-
-    .sidebar h2{
-      color:#f9c74f;
-      text-align:center;
-      margin-bottom:20px;
+    .sidebar a,.sidebar button{
+      display:block;margin:8px 0;padding:12px;
+      border-radius:10px;border:none;
+      background:rgba(255,255,255,.06);
+      color:white;text-decoration:none;
+      cursor:pointer;font-weight:600;
     }
+    .sidebar a.active{background:#4cc9f0;color:black;}
 
-    .sidebar a,
-    .sidebar button{
-      display:block;
-      margin:8px 0;
-      padding:12px;
-      border-radius:10px;
-      text-decoration:none;
-      background:rgba(255,255,255,0.06);
-      color:white;
-      font-weight:600;
-      border:none;
-      cursor:pointer;
+    /* CONTENT */
+    .content{margin-left:240px;padding:20px;}
+    header{text-align:center;color:#f9c74f;font-size:24px;}
+
+    .top-buttons{
+      display:flex;gap:10px;margin:20px 0;
     }
-
-    .sidebar a.active{
-      background:linear-gradient(135deg,#90dbf4,#4cc9f0);
-      color:black;
-    }
-
-    /* ===== CONTENT ===== */
-    .content{
-      margin-left:240px;
-      padding:20px;
-    }
-
-    header{
-      text-align:center;
-      font-size:24px;
-      color:#f9c74f;
-      margin-bottom:20px;
+    .top-buttons button{
+      flex:1;padding:12px;border:none;border-radius:10px;
+      background:linear-gradient(135deg,#f9c74f,#f9844a);
+      font-weight:bold;cursor:pointer;
     }
 
     .box{
-      background:rgba(255,255,255,0.08);
-      backdrop-filter:blur(12px);
-      border-radius:18px;
-      padding:20px;
+      background:rgba(255,255,255,.08);
+      padding:20px;border-radius:16px;
       margin-bottom:20px;
     }
 
-    input, select, button{
-      width:100%;
-      padding:12px;
-      margin-top:10px;
-      border:none;
-      border-radius:10px;
-      background:#111;
-      color:white;
-    }
-
-    button{
-      background:linear-gradient(135deg,#f9c74f,#f9844a);
-      font-weight:bold;
-      cursor:pointer;
+    input,select,button{
+      width:100%;padding:12px;margin-top:10px;
+      border:none;border-radius:10px;
+      background:#111;color:white;
     }
 
     .record{
-      background:rgba(255,255,255,0.06);
-      padding:15px;
-      border-radius:14px;
+      background:rgba(255,255,255,.06);
+      padding:15px;border-radius:14px;
       margin-bottom:12px;
     }
 
-    .status{
-      color:#4cc9f0;
-      font-weight:bold;
+    .record button{
+      margin-top:8px;
+      background:#f94144;
     }
 
-    /* ===== MOBILE ===== */
-    .bottom-nav{display:none;}
-    @media(max-width:768px){
-      .sidebar{display:none;}
-      .content{margin-left:0;padding-bottom:90px;}
-      .bottom-nav{
-        display:flex;
-        position:fixed;
-        bottom:0;
-        left:0;
-        width:100%;
-        background:rgba(20,20,20,0.95);
-        justify-content:space-around;
-        padding:12px 0;
-      }
-      .bottom-nav a{
-        font-size:22px;
-        color:#f9c74f;
-        text-decoration:none;
-      }
-      .bottom-nav a.active{color:#4cc9f0;}
-    }
+    .edit{background:#4cc9f0 !important;color:black;}
   </style>
 </head>
 
 <body>
 
-<!-- ===== SIDEBAR ===== -->
+<!-- SIDEBAR -->
 <div class="sidebar">
-  <h2>🐄 PG Dairy</h2>
-  <a href="dashboard.html" class="nav-link">📊 Dashboard</a>
-  <a href="cows.html" class="nav-link">🐄 Cows</a>
-  <a href="milk.html" class="nav-link">🥛 Milk</a>
-  <a href="expenses.html" class="nav-link">💸 Expenses</a>
-  <a href="finance.html" class="nav-link">💰 Finance</a>
-  <a href="reports.html" class="nav-link">📑 Reports</a>
-  <button onclick="logout()">🚪 Logout</button>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="cows.html" class="active">Cows</a>
+  <a href="milk.html">Milk</a>
+  <a href="expenses.html">Expenses</a>
+  <a href="finance.html">Finance</a>
+  <a href="reports.html">Reports</a>
+  <button onclick="logout()">Logout</button>
 </div>
 
-<!-- ===== MOBILE NAV ===== -->
-<div class="bottom-nav">
-  <a href="dashboard.html">📊</a>
-  <a href="cows.html">🐄</a>
-  <a href="milk.html">🥛</a>
-  <a href="expenses.html">💸</a>
-  <a href="finance.html">💰</a>
-  <a href="reports.html">📑</a>
-</div>
-
-<!-- ===== CONTENT ===== -->
 <div class="content">
+<header>🐄 Cow Management</header>
 
-<header>🐄 Cow Records</header>
+<!-- TOP BUTTONS -->
+<div class="top-buttons">
+  <button onclick="showAdd()">➕ Add Cow</button>
+  <button onclick="showView()">👁 View Cows</button>
+</div>
 
-<!-- ADD COW -->
-<div class="box">
-  <h3>Add Cow</h3>
+<!-- ADD COW FORM -->
+<div id="addSection" class="box" style="display:none;">
+  <h3>Add / Edit Cow</h3>
+
+  <input type="hidden" id="editId">
 
   <input id="cowName" placeholder="Cow Name">
   <input id="cowId" placeholder="Cow ID">
@@ -169,7 +110,7 @@
     <option>Near to Delivery</option>
   </select>
 
-  <!-- Pregnancy Fields -->
+  <!-- CONDITIONAL -->
   <div id="inseminationBox" style="display:none;">
     <input type="date" id="inseminationDate" onchange="calculateDelivery()">
   </div>
@@ -179,125 +120,129 @@
   </div>
 
   <div id="monthsBox" style="display:none;">
-    <input type="text" id="pregMonths" readonly placeholder="Pregnancy Months">
+    <input id="pregMonths" readonly placeholder="Pregnancy Months">
   </div>
 
   <button onclick="saveCow()">Save Cow</button>
 </div>
 
-<!-- LIST -->
-<div id="cowList"></div>
+<!-- VIEW COWS -->
+<div id="viewSection" class="box" style="display:none;">
+  <h3>All Cows</h3>
+  <div id="cowList"></div>
+</div>
 
 </div>
 
-<!-- ===== ACTIVE PAGE ===== -->
-<script>
-  const links=document.querySelectorAll(".nav-link,.bottom-nav a");
-  const current=location.pathname.split("/").pop();
-  links.forEach(l=>{
-    if(l.getAttribute("href")===current)l.classList.add("active");
-  });
-</script>
-
-<!-- ===== FIREBASE + LOGIC ===== -->
+<!-- FIREBASE -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from
-    "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getAuth, onAuthStateChanged, signOut } from
-    "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signOut } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-  const firebaseConfig={
-    apiKey:"AIzaSyC4lH4ViCEhQbvNt6nLXmfR-AhAa1-b6Bk",
-    authDomain:"pgdairy-63765.firebaseapp.com",
-    projectId:"pgdairy-63765",
-    appId:"1:460696117464:web:410ce4a62e899d8567f7ad"
+const app = initializeApp({
+  apiKey:"AIzaSyC4lH4ViCEhQbvNt6nLXmfR-AhAa1-b6Bk",
+  projectId:"pgdairy-63765"
+});
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+/* TOGGLE */
+window.showAdd=()=>{addSection.style.display="block";viewSection.style.display="none";}
+window.showView=()=>{addSection.style.display="none";viewSection.style.display="block";loadCows();}
+
+/* STATUS */
+window.handleStatusChange=()=>{
+  const show = status.value==="Pregnant" || status.value==="Pregnant & Milking";
+  inseminationBox.style.display = show?"block":"none";
+  deliveryBox.style.display = show?"block":"none";
+  monthsBox.style.display = show?"block":"none";
+}
+
+/* DELIVERY */
+window.calculateDelivery=()=>{
+  if(!inseminationDate.value) return;
+  let d=new Date(inseminationDate.value);
+  d.setDate(d.getDate()+283);
+  deliveryDate.value=d.toISOString().split("T")[0];
+  updateMonths();
+}
+
+function updateMonths(){
+  let start=new Date(inseminationDate.value);
+  let today=new Date();
+  let m=(today.getFullYear()-start.getFullYear())*12+(today.getMonth()-start.getMonth());
+  pregMonths.value=Math.min(Math.max(m,0),9)+" months";
+}
+
+/* SAVE */
+window.saveCow=async()=>{
+  const data={
+    cowName:cowName.value,
+    cowId:cowId.value,
+    purchaseDate:purchaseDate.value,
+    inseminationDate:inseminationDate.value||null,
+    expectedDelivery:deliveryDate.value||null,
+    pregnancyMonths:pregMonths.value||null,
+    capacity:+capacity.value,
+    status:status.value
   };
 
-  const app=initializeApp(firebaseConfig);
-  const db=getFirestore(app);
-  const auth=getAuth(app);
+  if(editId.value){
+    await updateDoc(doc(db,"cows",editId.value),data);
+  }else{
+    await addDoc(collection(db,"cows"),data);
+  }
 
-  onAuthStateChanged(auth,u=>{
-    if(!u)location.href="login.html";
+  editId.value="";
+  showView();
+}
+
+/* LOAD */
+async function loadCows(){
+  cowList.innerHTML="";
+  (await getDocs(collection(db,"cows"))).forEach(d=>{
+    const c=d.data();
+    cowList.innerHTML+=`
+      <div class="record">
+        <b>${c.cowName}</b> (${c.cowId})<br>
+        Status: ${c.status}<br>
+        Capacity: ${c.capacity} L/day<br>
+        🤰 ${c.pregnancyMonths||"-"}<br>
+        <button class="edit" onclick="editCow('${d.id}',${JSON.stringify(c).replace(/"/g,'&quot;')})">Edit</button>
+        <button onclick="deleteCow('${d.id}')">Delete</button>
+      </div>`;
   });
+}
 
-  window.handleStatusChange=function(){
-    const show = status.value==="Pregnant" || status.value==="Pregnant & Milking";
-    inseminationBox.style.display = show ? "block":"none";
-    deliveryBox.style.display = show ? "block":"none";
-    monthsBox.style.display = show ? "block":"none";
-    if(!show){
-      inseminationDate.value="";
-      deliveryDate.value="";
-      pregMonths.value="";
-    }
-  };
+/* EDIT */
+window.editCow=(id,c)=>{
+  showAdd();
+  editId.value=id;
+  cowName.value=c.cowName;
+  cowId.value=c.cowId;
+  purchaseDate.value=c.purchaseDate||"";
+  capacity.value=c.capacity;
+  status.value=c.status;
+  handleStatusChange();
+  inseminationDate.value=c.inseminationDate||"";
+  deliveryDate.value=c.expectedDelivery||"";
+  pregMonths.value=c.pregnancyMonths||"";
+}
 
-  window.calculateDelivery=function(){
-    if(!inseminationDate.value) return;
-    const d=new Date(inseminationDate.value);
-    d.setDate(d.getDate()+283);
-    deliveryDate.value=d.toISOString().split("T")[0];
-    updatePregnancyMonths();
-  };
-
-  function updatePregnancyMonths(){
-    if(!inseminationDate.value) return;
-    const start=new Date(inseminationDate.value);
-    const today=new Date();
-    let months=(today.getFullYear()-start.getFullYear())*12+(today.getMonth()-start.getMonth());
-    if(months<0)months=0;
-    if(months>9)months=9;
-    pregMonths.value=months+" months";
-  }
-
-  setInterval(updatePregnancyMonths,86400000);
-
-  window.saveCow=async()=>{
-    await addDoc(collection(db,"cows"),{
-      cowName:cowName.value,
-      cowId:cowId.value,
-      purchaseDate:purchaseDate.value,
-      inseminationDate:inseminationDate.value||null,
-      expectedDelivery:deliveryDate.value||null,
-      pregnancyMonths:pregMonths.value||null,
-      capacity:Number(capacity.value),
-      status:status.value,
-      createdAt:new Date()
-    });
-    loadCows();
-  };
-
-  async function loadCows(){
-    cowList.innerHTML="";
-    const snap=await getDocs(collection(db,"cows"));
-    snap.forEach(d=>{
-      const c=d.data();
-      cowList.innerHTML+=`
-        <div class="record">
-          <b>${c.cowName}</b> (${c.cowId})<br>
-          🗓 Purchase: ${c.purchaseDate||"-"}<br>
-          💉 Insemination: ${c.inseminationDate||"-"}<br>
-          🍼 Expected Delivery: ${c.expectedDelivery||"-"}<br>
-          🤰 Pregnancy: ${c.pregnancyMonths||"-"}<br>
-          🥛 Capacity: ${c.capacity} L/day<br>
-          <span class="status">Status: ${c.status}</span><br><br>
-          <button onclick="deleteCow('${d.id}')">Delete</button>
-        </div>`;
-    });
-  }
-
-  window.deleteCow=async(id)=>{
+/* DELETE */
+window.deleteCow=async(id)=>{
+  if(confirm("Delete cow?")){
     await deleteDoc(doc(db,"cows",id));
     loadCows();
-  };
+  }
+}
 
-  loadCows();
+/* LOGOUT */
+window.logout=()=>signOut(auth).then(()=>location.href="login.html");
 
-  window.logout=()=>{
-    signOut(auth).then(()=>location.href="login.html");
-  };
 </script>
 
 </body>
